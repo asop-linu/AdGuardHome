@@ -133,3 +133,87 @@ func TestUpdater_internal(t *testing.T) {
 func newCtx(tb testing.TB) (ctx context.Context) {
 	return testutil.ContextWithTimeout(tb, 1*time.Second)
 }
+
+func TestSafeJoinName(t *testing.T) {
+	testCases := []struct {
+		name string
+		in   string
+		want string
+	}{{
+		name: "simple",
+		in:   "AdGuardHome.exe",
+		want: "d/AdGuardHome.exe",
+	}, {
+		name: "subdir",
+		in:   "AdGuardHome/AdGuardHome",
+		want: "d/AdGuardHome/AdGuardHome",
+	}, {
+		name: "abs",
+		in:   "/etc/passwd",
+		want: "",
+	}, {
+		name: "dotdot",
+		in:   "../AdGuardHome.yaml",
+		want: "",
+	}, {
+		name: "nested_dotdot",
+		in:   "AdGuardHome/../../AdGuardHome.yaml",
+		want: "",
+	}, {
+		name: "dot",
+		in:   ".",
+		want: "",
+	}}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, safeJoinName("d", tc.in))
+		})
+	}
+}
+
+func TestValidateVersion(t *testing.T) {
+	testCases := []struct {
+		name string
+		in   string
+		want bool
+	}{{
+		name: "ok",
+		in:   "v0.107.55",
+		want: true,
+	}, {
+		name: "ok_beta",
+		in:   "v0.103.0-beta.2",
+		want: true,
+	}, {
+		name: "ok_rc",
+		in:   "v0.108.0-rc.1",
+		want: true,
+	}, {
+		name: "empty",
+		in:   "",
+		want: false,
+	}, {
+		name: "no_v",
+		in:   "0.107.55",
+		want: false,
+	}, {
+		name: "traversal",
+		in:   "../etc/cron.d/x",
+		want: false,
+	}, {
+		name: "slash",
+		in:   "v0.107.55/../../x",
+		want: false,
+	}, {
+		name: "space",
+		in:   "v0.1.0 beta",
+		want: false,
+	}}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, validateVersion(tc.in) == nil)
+		})
+	}
+}

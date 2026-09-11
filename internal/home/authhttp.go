@@ -26,7 +26,7 @@ import (
 )
 
 // cookieTTL is the time-to-live of the session cookie.
-const cookieTTL = 365 * timeutil.Day
+const cookieTTL = 30 * timeutil.Day
 
 // sessionCookieName is the name of the session cookie.
 const sessionCookieName = "agh_session"
@@ -179,7 +179,7 @@ func (web *webAPI) handleLogin(w http.ResponseWriter, r *http.Request) {
 		logIP = ip.String()
 	}
 
-	cookie, err := newCookie(ctx, web.auth, req, remoteIPStr)
+	cookie, err := newCookie(ctx, web.auth, req, remoteIPStr, web.isSecureCookie())
 	if err != nil {
 		web.writeErrorWithIP(ctx, err, r, w, http.StatusForbidden, logIP)
 
@@ -198,12 +198,29 @@ func (web *webAPI) handleLogin(w http.ResponseWriter, r *http.Request) {
 	aghhttp.OK(ctx, web.logger, w)
 }
 
+// isSecureCookie returns true if the web server serves the web UI over HTTPS,
+// in which case the authentication cookie must be marked secure so that it is
+// never sent over plain HTTP.
+func (web *webAPI) isSecureCookie() (ok bool) {
+	if web.tlsManager == nil {
+		return false
+	}
+
+	extTLSConf := web.tlsManager.ExtendedTLSConfig()
+
+	return extTLSConf.Enabled &&
+		extTLSConf.PortHTTPS != 0 &&
+		len(extTLSConf.PrivateKeyData) != 0 &&
+		len(extTLSConf.CertificateChainData) != 0
+}
+
 // newCookie creates a new authentication cookie.  rateLimiter must not be nil.
 func newCookie(
 	ctx context.Context,
 	auth *auth,
 	req loginJSON,
 	addr string,
+	secure bool,
 ) (c *http.Cookie, err error) {
 	user, err := auth.users.ByLogin(ctx, aghuser.Login(req.Name))
 	if err != nil {
@@ -237,7 +254,9 @@ func newCookie(
 		Value:    hex.EncodeToString(sess.Token[:]),
 		Path:     "/",
 		Expires:  time.Now().Add(cookieTTL),
+		MaxAge:   int(cookieTTL.Seconds()),
 		HttpOnly: true,
+		Secure:   secure,
 		SameSite: http.SameSiteLaxMode,
 	}, nil
 }
@@ -276,8 +295,10 @@ func (web *webAPI) handleLogout(w http.ResponseWriter, r *http.Request) {
 		Value:   "",
 		Path:    "/",
 		Expires: time.Unix(0, 0),
+		MaxAge:  -1,
 
 		HttpOnly: true,
+		Secure:   web.isSecureCookie(),
 		SameSite: http.SameSiteLaxMode,
 	}
 

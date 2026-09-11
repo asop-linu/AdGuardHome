@@ -9,9 +9,10 @@ import (
 	"log/slog"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/AdguardTeam/dnsproxy/upstream"
+	"github.com/asop-linu/dnsproxy/upstream"
 	"github.com/AdguardTeam/golibs/cache"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil"
@@ -86,6 +87,19 @@ type Checker struct {
 
 	// cacheTime is the time period to store hash.
 	cacheTime time.Duration
+
+	// inflight guards the inFlight map of pending upstream lookups keyed by
+	// question, to avoid duplicate concurrent queries for the same hash prefix
+	// set.
+	inflight *sync.Mutex
+	inFlight map[string]*inFlightLookup
+}
+
+// inFlightLookup is a single in-progress hash-prefix lookup.  Its result is
+// shared between all the concurrent callers that requested the same data.
+type inFlightLookup struct {
+	done    chan struct{}
+	matched bool
 }
 
 // New returns Checker.
@@ -99,6 +113,8 @@ func New(conf *Config) (c *Checker) {
 		}),
 		txtSuffix: conf.TXTSuffix,
 		cacheTime: conf.CacheTime,
+		inflight:  &sync.Mutex{},
+		inFlight:  map[string]*inFlightLookup{},
 	}
 }
 
@@ -120,10 +136,31 @@ func (c *Checker) Check(host string) (ok bool, err error) {
 	question := c.getQuestion(hashesToRequest)
 
 	l.DebugContext(ctx, "checking", "question", question)
+
+	// Deduplicate concurrent lookups for the same data to avoid hammering the
+	// upstream with identical queries under load.
+	c.inflight.Lock()
+	if iq, ok := c.inFlight[question]; ok && !lookupDone(iq.done) {
+		c.inflight.Unlock()
+
+		<-iq.done
+
+		return iq.matched, nil
+	}
+
+	iq := &inFlightLookup{done: make(chan struct{})}
+	c.inFlight[question] = iq
+	c.inflight.Unlock()
+
 	req := (&dns.Msg{}).SetQuestion(question, dns.TypeTXT)
 
 	resp, err := c.upstream.Exchange(req)
 	if err != nil {
+		close(iq.done)
+		c.inflight.Lock()
+		delete(c.inFlight, question)
+		c.inflight.Unlock()
+
 		return false, fmt.Errorf("getting hashes: %w", err)
 	}
 
@@ -131,7 +168,24 @@ func (c *Checker) Check(host string) (ok bool, err error) {
 
 	c.storeInCache(ctx, hashesToRequest, receivedHashes)
 
+	iq.matched = matched
+	close(iq.done)
+
+	c.inflight.Lock()
+	delete(c.inFlight, question)
+	c.inflight.Unlock()
+
 	return matched, nil
+}
+
+// lookupDone reports whether d has already been closed.
+func lookupDone(d chan struct{}) (ok bool) {
+	select {
+	case <-d:
+		return true
+	default:
+		return false
+	}
 }
 
 // hostnameToHashes returns hashes that should be checked by the hash prefix

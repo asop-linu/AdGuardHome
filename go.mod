@@ -1,13 +1,13 @@
 module github.com/AdguardTeam/AdGuardHome
 
-go 1.26.8
+go 1.27.1
 
 require (
 	github.com/AdguardTeam/dnscrypt v0.0.2
-	github.com/AdguardTeam/dnsproxy v0.84.1
 	github.com/AdguardTeam/golibs v0.35.15
 	github.com/AdguardTeam/urlfilter v0.23.4
 	github.com/NYTimes/gziphandler v1.1.1
+	github.com/asop-linu/dnsproxy v0.0.0-20260911215715-52638946de52
 	github.com/bluele/gcache v0.0.2
 	github.com/c2h5oh/datasize v0.0.0-20231215233829-aa82cc1e6500
 	github.com/digineo/go-ipset/v2 v2.2.1
@@ -38,7 +38,7 @@ require (
 	go.etcd.io/bbolt v1.5.0
 	// TODO(e.burkov): Update to a stable tag.
 	go.yaml.in/yaml/v4 v4.0.0-rc.6
-	golang.org/x/crypto v0.55.0
+	golang.org/x/crypto v0.56.0
 	golang.org/x/net v0.58.0
 	golang.org/x/sys v0.47.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1

@@ -5,6 +5,7 @@ import (
 	"context"
 	"log/slog"
 	"net/netip"
+	"sync"
 	"time"
 
 	"github.com/AdguardTeam/golibs/errors"
@@ -71,6 +72,19 @@ type Default struct {
 
 	// cacheTTL is the Time to Live duration for cached IP addresses.
 	cacheTTL time.Duration
+
+	// inflight guards inFlight, the map of unresolved in-progress resolutions
+	// keyed by IP address.  It is used to avoid duplicate concurrent upstream
+	// queries for the same address.
+	inflight *sync.Mutex
+	inFlight map[netip.Addr]*inFlightQuery
+}
+
+// inFlightQuery tracks a single in-progress rDNS resolution so that concurrent
+// callers for the same address can share its result.
+type inFlightQuery struct {
+	done chan struct{}
+	host string
 }
 
 // New returns a new default rDNS query processor.  conf must not be nil.
@@ -80,6 +94,8 @@ func New(conf *Config) (r *Default) {
 		cache:     gcache.New(conf.CacheSize).LRU().Build(),
 		exchanger: conf.Exchanger,
 		cacheTTL:  conf.CacheTTL,
+		inflight:  &sync.Mutex{},
+		inFlight:  map[netip.Addr]*inFlightQuery{},
 	}
 }
 
@@ -93,6 +109,23 @@ func (r *Default) Process(ctx context.Context, ip netip.Addr) (host string, chan
 		return fromCache, false
 	}
 
+	// Check whether another goroutine is already resolving this address and
+	// share its result if so, to avoid duplicate upstream queries during bursts
+	// of requests for the same IP.
+	r.inflight.Lock()
+	if iq, ok := r.inFlight[ip]; ok && !channelClosed(iq.done) {
+		r.inflight.Unlock()
+
+		<-iq.done
+
+		return iq.host, iq.host != fromCache
+	}
+
+	iq := &inFlightQuery{done: make(chan struct{})}
+	r.inFlight[ip] = iq
+	r.inflight.Unlock()
+
+	var err error
 	host, ttl, err := r.exchanger.Exchange(ctx, ip)
 	if err != nil {
 		r.logger.DebugContext(ctx, "resolving", "ip", ip, slogutil.KeyError, err)
@@ -110,9 +143,26 @@ func (r *Default) Process(ctx context.Context, ip netip.Addr) (host string, chan
 		r.logger.DebugContext(ctx, "adding item to cache", "key", ip, slogutil.KeyError, err)
 	}
 
-	// TODO(e.burkov):  The name doesn't change if it's neither stored in cache
-	// nor resolved successfully.  Is it correct?
+	iq.host = host
+	close(iq.done)
+
+	// The result is now cached, so an in-flight entry is no longer needed.
+	// Keep the map bounded.
+	r.inflight.Lock()
+	delete(r.inFlight, ip)
+	r.inflight.Unlock()
+
 	return host, fromCache == "" || host != fromCache
+}
+
+// channelClosed reports whether c has already been closed.
+func channelClosed(c chan struct{}) (ok bool) {
+	select {
+	case <-c:
+		return true
+	default:
+		return false
+	}
 }
 
 // findInCache finds domain name in the cache.  expired is true if host is not

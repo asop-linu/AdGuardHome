@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/netip"
-	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/aghnet"
@@ -98,8 +98,8 @@ type DefaultAddrProc struct {
 	// logger is used to log the operation of address processor.
 	logger *slog.Logger
 
-	// clientIPsMu serializes closure of clientIPs and access to isClosed.
-	clientIPsMu *sync.Mutex
+	// quit is closed when the address processor is closed.
+	quit chan struct{}
 
 	// clientIPs is the channel queueing client processing tasks.
 	clientIPs chan netip.Addr
@@ -118,8 +118,8 @@ type DefaultAddrProc struct {
 	// private.
 	privateSubnets netutil.SubnetSet
 
-	// isClosed is set to true once the address processor is closed.
-	isClosed bool
+	// closed is set to true once the address processor is closed.
+	closed atomic.Bool
 
 	// usePrivateRDNS, if true, enables resolving of private client IP addresses
 	// using reverse DNS.
@@ -145,7 +145,7 @@ const (
 func NewDefaultAddrProc(c *DefaultAddrProcConfig) (p *DefaultAddrProc) {
 	p = &DefaultAddrProc{
 		logger:         c.BaseLogger.With(slogutil.KeyPrefix, "addrproc"),
-		clientIPsMu:    &sync.Mutex{},
+		quit:           make(chan struct{}),
 		clientIPs:      make(chan netip.Addr, defaultQueueSize),
 		rdns:           &rdns.Empty{},
 		addrUpdater:    c.AddressUpdater,
@@ -217,10 +217,7 @@ var _ AddressProcessor = (*DefaultAddrProc)(nil)
 
 // Process implements the [AddressProcessor] interface for *DefaultAddrProc.
 func (p *DefaultAddrProc) Process(ctx context.Context, ip netip.Addr) {
-	p.clientIPsMu.Lock()
-	defer p.clientIPsMu.Unlock()
-
-	if p.isClosed {
+	if p.closed.Load() {
 		return
 	}
 
@@ -232,8 +229,9 @@ func (p *DefaultAddrProc) Process(ctx context.Context, ip netip.Addr) {
 	}
 }
 
-// process processes the incoming client IP-address information.  It is intended
-// to be used as a goroutine.  Once clientIPs is closed, process exits.
+// process handles the incoming client IP-address information.  It is intended
+// to be used as a goroutine.  Once the address processor is closed, process
+// drains the remaining queue and exits.
 func (p *DefaultAddrProc) process(ctx context.Context, catchPanics bool) {
 	if catchPanics {
 		defer slogutil.RecoverAndLog(ctx, p.logger)
@@ -241,14 +239,31 @@ func (p *DefaultAddrProc) process(ctx context.Context, catchPanics bool) {
 
 	p.logger.InfoContext(ctx, "processing addresses")
 
-	for ip := range p.clientIPs {
+	handle := func(ip netip.Addr) {
 		host := p.processRDNS(ctx, ip)
 		info := p.processWHOIS(ctx, ip)
 
 		p.addrUpdater.UpdateAddress(ctx, ip, host, info)
 	}
 
-	p.logger.InfoContext(ctx, "finished processing addresses")
+	for {
+		select {
+		case <-p.quit:
+			// Drain the queue of the addresses queued before closing.
+			for {
+				select {
+				case ip := <-p.clientIPs:
+					handle(ip)
+				default:
+					p.logger.InfoContext(ctx, "finished processing addresses")
+
+					return
+				}
+			}
+		case ip := <-p.clientIPs:
+			handle(ip)
+		}
+	}
 }
 
 // processRDNS resolves the clients' IP addresses using reverse DNS.  host is
@@ -313,15 +328,11 @@ func (p *DefaultAddrProc) processWHOIS(ctx context.Context, ip netip.Addr) (info
 
 // Close implements the [AddressProcessor] interface for *DefaultAddrProc.
 func (p *DefaultAddrProc) Close() (err error) {
-	p.clientIPsMu.Lock()
-	defer p.clientIPsMu.Unlock()
-
-	if p.isClosed {
+	if !p.closed.CompareAndSwap(false, true) {
 		return ErrClosed
 	}
 
-	close(p.clientIPs)
-	p.isClosed = true
+	close(p.quit)
 
 	return nil
 }

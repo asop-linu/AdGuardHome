@@ -12,7 +12,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"runtime/debug"
 	"slices"
 	"strings"
 	"sync"
@@ -770,8 +769,11 @@ func (d *DNSFilter) initFiltering(ctx context.Context, allowFilters, blockFilter
 		d.filteringEngineAllow = filteringEngineAllow
 	}()
 
-	// Make sure that the OS reclaims memory as soon as possible.
-	debug.FreeOSMemory()
+	// NOTE:  Don't call [debug.FreeOSMemory] here.  It triggers a full,
+	// synchronous garbage collection and returns all memory to the OS, which
+	// causes a global stop-the-world pause that stalls DNS and HTTP processing
+	// for as long as the newly-built filtering engines take to collect.  The
+	// runtime already reclaims this memory gradually via normal GC cycles.
 
 	d.logger.DebugContext(ctx, "initialized filtering engine")
 
@@ -1127,8 +1129,10 @@ func (d *DNSFilter) periodicallyRefreshFilters(ivl time.Duration) (nextIvl time.
 	if ok && !isNetErr {
 		ivl = maxInterval
 	} else if isNetErr {
+		// Increase the interval exponentially on network errors, but never
+		// beyond the maximum so that the refresh loop keeps trying.
 		ivl *= 2
-		ivl = max(ivl, maxInterval)
+		ivl = min(ivl, maxInterval)
 	}
 
 	return ivl

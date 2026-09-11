@@ -53,7 +53,7 @@ type DefaultManager struct {
 	logger      *slog.Logger
 
 	// mu protects tlsConf, extTLSConf, certLastMod, tlsCert, and pair.
-	mu              *sync.Mutex
+	mu              *sync.RWMutex
 	tlsConf         *tls.Config
 	extTLSConf      *ExtendedTLSConfig
 	tlsCert         *tls.Certificate
@@ -73,7 +73,7 @@ func NewDefaultManager(
 ) (mgr *DefaultManager, err error) {
 	mgr = &DefaultManager{
 		logger: conf.Logger,
-		mu:     &sync.Mutex{},
+		mu:     &sync.RWMutex{},
 		pair:   TLSPair{},
 		// Buffer the channel to avoid missing updates.
 		updates:    make(chan UpdateSignal, 1),
@@ -378,8 +378,8 @@ func (mgr *DefaultManager) CipherSuites() (cs []uint16) {
 
 // TLSConfig implements the [Manager] interface for *DefaultManager.
 func (mgr *DefaultManager) TLSConfig() (conf *tls.Config) {
-	mgr.mu.Lock()
-	defer mgr.mu.Unlock()
+	mgr.mu.RLock()
+	defer mgr.mu.RUnlock()
 
 	return mgr.tlsConf.Clone()
 }
@@ -393,8 +393,8 @@ func (mgr *DefaultManager) RootCAs() (root *x509.CertPool) {
 // returns true if the current TLS configuration has at least one certificate
 // with an IP address in its SAN extension.
 func (mgr *DefaultManager) HasIPAddrs() (ok bool) {
-	mgr.mu.Lock()
-	defer mgr.mu.Unlock()
+	mgr.mu.RLock()
+	defer mgr.mu.RUnlock()
 
 	if mgr.tlsCert == nil || mgr.tlsCert.Leaf == nil {
 		return false
@@ -407,8 +407,8 @@ func (mgr *DefaultManager) HasIPAddrs() (ok bool) {
 // *DefaultManager.  It returns a deep copy of the stored extended TLS
 // configuration.
 func (mgr *DefaultManager) ExtendedTLSConfig() (extTLSConf *ExtendedTLSConfig) {
-	mgr.mu.Lock()
-	defer mgr.mu.Unlock()
+	mgr.mu.RLock()
+	defer mgr.mu.RUnlock()
 
 	return mgr.extTLSConf.Clone()
 }
@@ -496,14 +496,16 @@ func (mgr *DefaultManager) updateTLSCert(extTLSConf *ExtendedTLSConfig) (err err
 }
 
 // onGetCertificate gets [*tls.Certificate] from [*tls.Config].  If
-// [DefaultManager.extTLSConf.Enabled] is false, nil is returned.
+// [DefaultManager.extTLSConf.Enabled] is false, nil is returned.  It only
+// takes a read lock since it runs on the TLS handshake hot path and the
+// guarded fields are replaced wholesale by the writers.
 //
 // TODO(m.kazantsev):  Consider using tls.SupportsCertificate.
 func (mgr *DefaultManager) onGetCertificate(
 	chi *tls.ClientHelloInfo) (cert *tls.Certificate, err error,
 ) {
-	mgr.mu.Lock()
-	defer mgr.mu.Unlock()
+	mgr.mu.RLock()
+	defer mgr.mu.RUnlock()
 
 	if !mgr.extTLSConf.Enabled || mgr.tlsConf == nil {
 		return nil, nil

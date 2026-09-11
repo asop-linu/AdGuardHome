@@ -22,12 +22,23 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 - Go version has been updated to prevent the possibility of exploiting the Go vulnerabilities fixed in [1.26.8][go-1.26.8].
 
+### Changed
+
+- Switched the DNS proxy module to the [asop-linu/dnsproxy][dnsproxy-fork] fork.
+
+### Performance
+
+- Enabled profile-guided optimization (PGO) builds via `--pgo=auto`.
+- Reduced lock contention in the legacy client storage subsystem.
+- Made the client address processor lock-free.
+
 ### Fixed
 
 - DHCP server persisting uncommitted leases with zero expiry after `DHCPDISCOVER` messages ([#8572]).
 
-[#8572]:     https://github.com/AdguardTeam/AdGuardHome/issues/8572
-[go-1.26.8]: https://groups.google.com/g/golang-announce/c/QiTRm-HGGtI
+[#8572]:       https://github.com/AdguardTeam/AdGuardHome/issues/8572
+[dnsproxy-fork]: https://github.com/asop-linu/dnsproxy
+[go-1.26.8]:   https://groups.google.com/g/golang-announce/c/QiTRm-HGGtI
 
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.

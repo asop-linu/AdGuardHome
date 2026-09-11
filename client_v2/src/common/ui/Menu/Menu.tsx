@@ -8,6 +8,15 @@ import intl from 'panel/common/intl';
 import { getLogoutUrl } from 'panel/api/generated';
 import { AccordionSection } from './AccordionSection';
 
+const handleLogoutClick = () => {
+    // Log-out is performed server-side: a full page navigation to /control/logout,
+    // so that the session cookie is cleared and the 302 redirect to /login.html
+    // is followed by the browser.  A plain <a href> can't be used here, because
+    // the @solidjs/router HashRouter intercepts it and turns it into the hash
+    // route #/control/logout instead of navigating to the real URL.
+    window.location.replace(`/${getLogoutUrl()}`);
+};
+
 import s from './styles.module.pcss';
 
 type Props = {
@@ -143,16 +152,15 @@ export const Menu = (props: Props) => {
             </nav>
             <div class={s.referenceWrapper}>
                 <div class={cn(s.menuLinkWrapper)}>
-                    <a
-                        href={getLogoutUrl()}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    <button
+                        type="button"
                         class={s.menuLink}
                         id="sign_out"
+                        onClick={handleLogoutClick}
                     >
                         <Icon class={s.linkIcon} icon="logout" />
                         <span class={theme.common.textOverflow}>{intl.getMessage('logout')}</span>
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>

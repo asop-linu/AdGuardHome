@@ -32,7 +32,7 @@ export const AllowedClientsDialog = (props: Props) => {
                         {intl.getMessage('dns_allowed_clients_desc_2', {
                             a: (text: string) => (
                                 <a
-                                    href="https://github.com/AdguardTeam/AdGuardHome/wiki/Clients#identifying-clients"
+                                    href="https://github.com/asop-linu/AdGuardHome/wiki/Clients#identifying-clients"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     class={theme.link.link}

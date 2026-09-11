@@ -218,7 +218,7 @@ const renderDnsDevicesList = () => (
                     {intl.getMessage('setup_devices_dns_other_list_1', {
                         a: (text: string) => (
                             <a
-                                href="https://github.com/AdguardTeam/AdGuardHome"
+                                href="https://github.com/asop-linu/AdGuardHome"
                                 target="_blank"
                                 class={s.dnsLink}
                                 rel="noopener noreferrer"
@@ -232,7 +232,7 @@ const renderDnsDevicesList = () => (
                     {intl.getMessage('setup_devices_dns_other_list_2', {
                         a: (text: string) => (
                             <a
-                                href="https://github.com/AdguardTeam/dnsproxy"
+                                href="https://github.com/asop-linu/dnsproxy"
                                 target="_blank"
                                 class={s.dnsLink}
                                 rel="noopener noreferrer"

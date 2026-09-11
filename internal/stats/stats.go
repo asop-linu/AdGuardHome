@@ -596,15 +596,19 @@ func (s *StatsCtx) loadUnits(limit uint32) (units []*unitDB, curID uint32) {
 		curID = s.unitIDGen()
 	}
 
-	// Per-hour units.
+	// Per-hour units.  Iterate exactly limit-1 times so that the result is
+	// always well-formed even if curID is near the uint32 boundary, instead
+	// of relying on wraparound arithmetic and looping until the IDs match.
 	units = make([]*unitDB, 0, limit)
-	firstID := curID - limit + 1
-	for i := firstID; i != curID; i++ {
-		u := s.loadUnitFromDB(tx, i)
-		if u == nil {
-			u = &unitDB{NResult: make([]uint64, resultLast)}
+	if limit > 1 {
+		firstID := curID - limit + 1
+		for i := 0; i < int(limit)-1; i++ {
+			u := s.loadUnitFromDB(tx, firstID+uint32(i))
+			if u == nil {
+				u = &unitDB{NResult: make([]uint64, resultLast)}
+			}
+			units = append(units, u)
 		}
-		units = append(units, u)
 	}
 
 	err = finishTxn(tx, false)
@@ -614,11 +618,6 @@ func (s *StatsCtx) loadUnits(limit uint32) (units []*unitDB, curID uint32) {
 
 	if cur != nil {
 		units = append(units, cur.serialize())
-	}
-
-	if unitsLen := len(units); unitsLen != int(limit) {
-		// Should not happen.
-		panic(fmt.Errorf("loaded %d units when the desired number is %d", unitsLen, limit))
 	}
 
 	return units, curID

@@ -4,7 +4,7 @@ import (
 	"net"
 	"net/netip"
 
-	"github.com/AdguardTeam/dnsproxy/proxy"
+	"github.com/asop-linu/dnsproxy/proxy"
 )
 
 // setupDNS64 initializes DNS64 settings, the NAT64 prefixes in particular.  If

@@ -7,6 +7,7 @@ import (
 	"io"
 	"maps"
 	"net/http"
+	"regexp"
 	"slices"
 	"time"
 
@@ -33,6 +34,21 @@ type VersionInfo struct {
 // maxVersionRespSize is the maximum length in bytes for version information
 // response.
 const maxVersionRespSize datasize.ByteSize = 64 * datasize.KB
+
+// versionRe is a strict validator for update versions.  It rejects any string
+// that could be used for path traversal or other injection when the version is
+// used to build update directory names.
+var versionRe = regexp.MustCompile(`^v[0-9]+(\.[0-9]+)*(-[0-9A-Za-z.]+)?$`)
+
+// validateVersion returns an error if v is not a valid AdGuard Home update
+// version.
+func validateVersion(v string) (err error) {
+	if v != "" && versionRe.MatchString(v) {
+		return nil
+	}
+
+	return fmt.Errorf("bad update version %q", v)
+}
 
 // VersionInfo downloads the latest version information.  If forceRecheck is
 // false and there are cached results, those results are returned.
@@ -114,6 +130,11 @@ func (u *Updater) parseVersionResponse(
 	info.NewVersion = versionJSON["version"]
 	info.Announcement = versionJSON["announcement"]
 	info.AnnouncementURL = versionJSON["announcement_url"]
+
+	err = validateVersion(info.NewVersion)
+	if err != nil {
+		return info, fmt.Errorf("version.json: %w", err)
+	}
 
 	packageURL, key, found := u.downloadURL(ctx, versionJSON)
 	if !found {

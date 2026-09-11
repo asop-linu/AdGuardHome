@@ -25,8 +25,8 @@ import (
 	"github.com/AdguardTeam/AdGuardHome/internal/querylog"
 	"github.com/AdguardTeam/AdGuardHome/internal/rdns"
 	"github.com/AdguardTeam/AdGuardHome/internal/stats"
-	"github.com/AdguardTeam/dnsproxy/proxy"
-	"github.com/AdguardTeam/dnsproxy/upstream"
+	"github.com/asop-linu/dnsproxy/proxy"
+	"github.com/asop-linu/dnsproxy/upstream"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil"
@@ -186,6 +186,10 @@ type Server struct {
 
 	// isRunning is true if the DNS server is running.
 	isRunning bool
+
+	// blockedHostIPCache caches the results of looking up IPs for configured
+	// blocked-host replacement addresses, keyed by the resolved hostname.
+	blockedHostIPCache *blockedHostIPCache
 }
 
 // defaultLocalDomainSuffix is the default suffix used to detect internal hosts
@@ -256,7 +260,8 @@ func NewServer(p DNSCreateParams) (s *Server, err error) {
 		conf: ServerConfig{
 			ServePlainDNS: true,
 		},
-		tlsManager: p.TLSManager,
+		tlsManager:         p.TLSManager,
+		blockedHostIPCache: newBlockedHostIPCache(),
 	}
 
 	s.sysResolvers, err = sysresolv.NewSystemResolvers(nil, defaultPlainDNSPort)
@@ -806,6 +811,8 @@ func (s *Server) stopLocked(ctx context.Context) {
 	for _, b := range s.bootResolvers {
 		logCloserErr(ctx, b, "closing bootstrap", s.logger.With("address", b.Address()))
 	}
+
+	s.blockedHostIPCache.clear()
 
 	s.isRunning = false
 }

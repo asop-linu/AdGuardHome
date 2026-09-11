@@ -222,6 +222,10 @@ func (u *Updater) NewVersion() (nv string) {
 
 // prepare fills all necessary fields in Updater object.
 func (u *Updater) prepare(ctx context.Context) (err error) {
+	if err = validateVersion(u.newVersion); err != nil {
+		return fmt.Errorf("bad new version: %w", err)
+	}
+
 	u.updateDir = filepath.Join(u.workDir, fmt.Sprintf("agh-update-%s", u.newVersion))
 
 	_, pkgNameOnly := filepath.Split(u.packageURL)
@@ -561,8 +565,24 @@ func (u *Updater) unpackZipFile(
 		return "", nil
 	}
 
-	outputName := filepath.Join(outDir, name)
-	if fi.IsDir() {
+	outputName := safeJoinName(outDir, name)
+	if outputName == "" {
+		return "", fmt.Errorf("unsafe entry name %q", name)
+	}
+
+	mode := fi.Mode()
+	if !mode.IsRegular() && !mode.IsDir() {
+		u.logger.WarnContext(
+			ctx,
+			"unknown file type; skipping",
+			"file_name", name,
+			"mode", mode,
+		)
+
+		return "", nil
+	}
+
+	if mode.IsDir() {
 		if name == "AdGuardHome" {
 			// Top-level AdGuardHome/.  Skip it.
 			//
@@ -571,7 +591,7 @@ func (u *Updater) unpackZipFile(
 			return "", nil
 		}
 
-		err = os.Mkdir(outputName, fi.Mode())
+		err = os.Mkdir(outputName, 0o755)
 		if err != nil && !errors.Is(err, os.ErrExist) {
 			return "", fmt.Errorf("creating directory %q: %w", outputName, err)
 		}
@@ -581,8 +601,13 @@ func (u *Updater) unpackZipFile(
 		return "", nil
 	}
 
+	// Do not propagate arbitrary file modes from the archive.  Mask all the
+	// special bits (e.g. setuid/setgid) and only keep the read/execute
+	// permissions, consistently with the tar-gzip unpacking code.
+	fileMode := mode & 0o755
+
 	var wc io.WriteCloser
-	wc, err = os.OpenFile(outputName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fi.Mode())
+	wc, err = os.OpenFile(outputName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fileMode)
 	if err != nil {
 		return "", fmt.Errorf("os.OpenFile(): %w", err)
 	}
@@ -596,6 +621,26 @@ func (u *Updater) unpackZipFile(
 	u.logger.InfoContext(ctx, "created file", "name", outputName)
 
 	return name, nil
+}
+
+// safeJoinName joins an untrusted archive entry name to a destination
+// directory, refusing entries that could escape it (e.g. absolute paths or
+// those containing ".." elements).  It returns an empty string if name is
+// unsafe.
+func safeJoinName(dir, name string) (p string) {
+	clean := filepath.Clean(name)
+	switch {
+	case clean == ".":
+		return ""
+	case clean == "..":
+		return ""
+	case filepath.IsAbs(clean):
+		return ""
+	case strings.HasPrefix(clean, ".."+string(filepath.Separator)):
+		return ""
+	default:
+		return filepath.Join(dir, clean)
+	}
 }
 
 // unpackZip unpack all files from a .zip archive to outDir.  Existing files are

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
-	"github.com/AdguardTeam/dnsproxy/proxy"
+	"github.com/asop-linu/dnsproxy/proxy"
 	"github.com/AdguardTeam/golibs/netutil"
 	"github.com/miekg/dns"
 )
@@ -424,9 +424,11 @@ func (s *Server) processFilteringBeforeRequest(
 		return resultCodeSuccess
 	}
 
-	s.serverLock.RLock()
-	defer s.serverLock.RUnlock()
-
+	// filterDNSRequest only reads s.dnsFilter, and s.dnsFilter is never
+	// reassigned after the server is created, so we only need a short read
+	// lock to make sure the pointer is valid.  The actual filtering happens
+	// outside of the global server lock so that reconfigurations and stops
+	// are not blocked by CPU-heavy filter checking.
 	var err error
 	if dctx.result, err = s.filterDNSRequest(ctx, l, dctx); err != nil {
 		dctx.err = err

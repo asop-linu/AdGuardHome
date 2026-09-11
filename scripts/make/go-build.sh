@@ -136,9 +136,16 @@ else
 	cover_flags='--cover=0'
 fi
 
+# Use the default.pgo profile in the repository root for profile-guided
+# optimization if present.  -pgo=auto is a no-op when the profile is absent and
+# doesn't change the build otherwise.
+pgo_flags='--pgo=auto'
+readonly pgo_flags
+
 "$go" build \
 	"$cover_flags" \
 	--ldflags="$ldflags" \
+	"$pgo_flags" \
 	"$race_flags" \
 	"$tags_flags" \
 	--trimpath \

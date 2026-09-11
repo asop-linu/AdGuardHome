@@ -24,8 +24,10 @@ func (s *Server) DialContext(ctx context.Context, network, addr string) (conn ne
 	}
 
 	dialer := &net.Dialer{
-		// TODO(a.garipov): Consider making configurable.
-		Timeout: time.Minute * 5,
+		// Timeout for each dial attempt.  It should not be too large so that a
+		// misbehaving upstream does not hold up the connection for a long time,
+		// but still generous enough for slow networks.
+		Timeout: 10 * time.Second,
 	}
 
 	if netutil.IsValidIPString(host) {

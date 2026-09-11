@@ -14,12 +14,12 @@ export const BANNER_TEST_VALUES: Record<BannerType, BannerSpec> = {
     updateAuto: {
         type: 'update_auto',
         version: '1.0',
-        announcementUrl: 'https://github.com/AdguardTeam/AdGuardHome/releases',
+        announcementUrl: 'https://github.com/asop-linu/AdGuardHome/releases',
     },
     updateManual: {
         type: 'update_manual',
         version: '1.0',
-        announcementUrl: 'https://github.com/AdguardTeam/AdGuardHome/releases',
+        announcementUrl: 'https://github.com/asop-linu/AdGuardHome/releases',
     },
 };
 

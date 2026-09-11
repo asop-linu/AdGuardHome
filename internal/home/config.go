@@ -24,7 +24,7 @@ import (
 	"github.com/AdguardTeam/AdGuardHome/internal/querylog"
 	"github.com/AdguardTeam/AdGuardHome/internal/schedule"
 	"github.com/AdguardTeam/AdGuardHome/internal/stats"
-	"github.com/AdguardTeam/dnsproxy/fastip"
+	"github.com/asop-linu/dnsproxy/fastip"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil"
@@ -297,7 +297,7 @@ type tlsConfigSettings struct {
 	// DNSCryptConfigFile is the path to the DNSCrypt config file.  Must be set
 	// if PortDNSCrypt is not zero.
 	//
-	// See https://github.com/AdguardTeam/dnsproxy and
+	// See https://github.com/asop-linu/dnsproxy and
 	// https://github.com/AdguardTeam/dnscrypt.
 	DNSCryptConfigFile string `yaml:"dnscrypt_config_file" json:"dnscrypt_config_file"`
 

@@ -14,7 +14,7 @@ import (
 	"github.com/AdguardTeam/AdGuardHome/internal/dhcpsvc"
 	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
 	"github.com/AdguardTeam/AdGuardHome/internal/whois"
-	"github.com/AdguardTeam/dnsproxy/proxy"
+	"github.com/asop-linu/dnsproxy/proxy"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/hostsfile"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
@@ -131,7 +131,7 @@ type Storage struct {
 	logger *slog.Logger
 
 	// mu protects indexes of persistent and runtime clients.
-	mu *sync.Mutex
+	mu *sync.RWMutex
 
 	// index contains information about persistent clients.
 	index *index
@@ -176,7 +176,7 @@ func NewStorage(ctx context.Context, conf *StorageConfig) (s *Storage, err error
 
 	s = &Storage{
 		logger:                 conf.Logger,
-		mu:                     &sync.Mutex{},
+		mu:                     &sync.RWMutex{},
 		index:                  newIndex(),
 		runtimeIndex:           newRuntimeIndex(),
 		upstreamManager:        newUpstreamManager(conf.BaseLogger, conf.Clock),
@@ -249,12 +249,15 @@ func (s *Storage) ReloadARP(ctx context.Context) {
 
 // addFromSystemARP adds the IP-hostname pairings from the output of the arp -a
 // command.
+//
+// The potentially slow subprocess invocation happens outside of s.mu so that
+// client lookups are not blocked for the whole duration of the ARP refresh.
 func (s *Storage) addFromSystemARP(ctx context.Context) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	if err := s.arpDB.Refresh(ctx); err != nil {
+		s.mu.Lock()
 		s.arpDB = arpdb.Empty{}
+		s.mu.Unlock()
+
 		s.logger.ErrorContext(ctx, "refreshing arp container", slogutil.KeyError, err)
 
 		return
@@ -266,6 +269,9 @@ func (s *Storage) addFromSystemARP(ctx context.Context) {
 
 		return
 	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	src := SourceARP
 	s.runtimeIndex.clearSource(src)
@@ -531,8 +537,8 @@ func (p *FindParams) Set(id string) (err error) {
 // Find represents the parameters for searching a client.  params must not be
 // nil and must have at least one non-empty field.
 func (s *Storage) Find(params *FindParams) (p *Persistent, ok bool) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	isClientID := params.ClientID != ""
 	isRemoteIP := params.RemoteIP != (netip.Addr{})
@@ -589,8 +595,8 @@ func (s *Storage) findByIP(addr netip.Addr) (p *Persistent, ok bool) {
 //
 // TODO(s.chzhen):  Consider accepting [FindParams].
 func (s *Storage) FindLoose(ip netip.Addr, id string) (p *Persistent, ok bool) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	p, ok = s.index.find(id)
 	if ok {
@@ -680,8 +686,8 @@ func (s *Storage) RangeByName(f func(c *Persistent) (cont bool)) {
 
 // Size returns the number of persistent clients.
 func (s *Storage) Size() (n int) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	return s.index.size()
 }

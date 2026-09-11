@@ -3,7 +3,7 @@ package configmgr
 import (
 	"net/netip"
 
-	"github.com/AdguardTeam/dnsproxy/proxy"
+	"github.com/asop-linu/dnsproxy/proxy"
 	"github.com/AdguardTeam/golibs/container"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/timeutil"

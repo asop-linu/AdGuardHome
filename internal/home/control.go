@@ -418,16 +418,42 @@ func (web *webAPI) handleHTTPSRedirect(w http.ResponseWriter, r *http.Request) (
 	// server.  This can happen when the user has just set up HTTPS with
 	// redirects.  Prevent cache-related errors by setting the Vary header.
 	//
+	// The reflected origin is only echoed back when it actually matches the
+	// requested host, so that a spoofed Host header cannot turn into an
+	// access-control origin for an arbitrary site.  Requests without an
+	// Origin header (for example, plain same-origin navigation) keep the
+	// previous behavior.
+	//
 	// See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin.
-	originURL := &url.URL{
-		Scheme: urlutil.SchemeHTTP,
-		Host:   r.Host,
+	origin := r.Header.Get(httphdr.Origin)
+	acov := ""
+	if origin == "" {
+		// Same-origin request.  Preserve the historical behavior of
+		// reflecting the request origin.
+		acov = (&url.URL{
+			Scheme: originScheme(r.TLS != nil),
+			Host:   r.Host,
+		}).String()
+	} else if o, err := url.Parse(origin); err == nil && o.Host == r.Host {
+		acov = o.String()
 	}
 
-	respHdr.Set(httphdr.AccessControlAllowOrigin, originURL.String())
 	respHdr.Set(httphdr.Vary, httphdr.Origin)
+	if acov != "" {
+		respHdr.Set(httphdr.AccessControlAllowOrigin, acov)
+	}
 
 	return true
+}
+
+// originScheme returns the scheme of the request, taking its TLS state into
+// account.
+func originScheme(isTLS bool) (scheme string) {
+	if isTLS {
+		return urlutil.SchemeHTTPS
+	}
+
+	return urlutil.SchemeHTTP
 }
 
 // httpsURL returns a copy of u for redirection to the HTTPS version, taking the

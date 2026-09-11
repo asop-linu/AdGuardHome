@@ -495,12 +495,15 @@ func (web *webAPI) mustStartHTTP3(ctx context.Context, address string) {
 	logger := web.baseLogger.With(loggerKeyServer, "http3")
 	hdlr := web.wrapMux(logger)
 
+	// IdleTimeout mirrors the effective idle timeout of the other HTTP
+	// servers, which falls back to ReadTimeout, so that idle connections are
+	// reaped consistently across HTTP/1.1, HTTP/2, and HTTP/3.
 	web.httpsServer.server3 = &http3.Server{
-		// TODO(a.garipov): See if there is a way to use the error log as
-		// well as timeouts here.
-		Addr:      address,
-		TLSConfig: web.tlsManager.TLSConfig(),
-		Handler:   hdlr,
+		Addr:        address,
+		IdleTimeout: web.conf.ReadTimeout,
+		Logger:      logger,
+		TLSConfig:   web.tlsManager.TLSConfig(),
+		Handler:     hdlr,
 	}
 
 	web.logger.DebugContext(ctx, "starting http/3 server")

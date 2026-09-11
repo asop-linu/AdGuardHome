@@ -1,6 +1,6 @@
 package aghnet
 
-import "github.com/AdguardTeam/dnsproxy/upstream"
+import "github.com/asop-linu/dnsproxy/upstream"
 
 // UpstreamHTTPVersions returns the HTTP versions for upstream configuration
 // depending on configuration.

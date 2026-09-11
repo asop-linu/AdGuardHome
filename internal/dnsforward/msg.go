@@ -5,9 +5,11 @@ import (
 	"log/slog"
 	"net/netip"
 	"slices"
+	"sync"
+	"time"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
-	"github.com/AdguardTeam/dnsproxy/proxy"
+	"github.com/asop-linu/dnsproxy/proxy"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/urlfilter/rules"
 	"github.com/miekg/dns"
@@ -324,6 +326,72 @@ func (s *Server) makeResponseNullIP(ctx context.Context, req *dns.Msg) (resp *dn
 	return resp
 }
 
+// blockedHostIPCache caches the results of looking up IPs for configured
+// blocked-host replacement addresses to avoid a DNS query per request.
+type blockedHostIPCache struct {
+	mu sync.Mutex
+	m  map[string]blockedHostCacheEntry
+}
+
+// blockedHostCacheEntry is a single entry in [blockedHostIPCache].
+type blockedHostCacheEntry struct {
+	expiry  time.Time
+	answers []dns.RR
+}
+
+const blockedHostIPCacheMax = 64
+
+const blockedHostIPCacheTTL = 5 * time.Minute
+
+func newBlockedHostIPCache() (c *blockedHostIPCache) {
+	return &blockedHostIPCache{
+		m: make(map[string]blockedHostCacheEntry, 16),
+	}
+}
+
+func (c *blockedHostIPCache) get(host string) (answers []dns.RR, ok bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	e, found := c.m[host]
+	if !found || time.Now().After(e.expiry) {
+		return nil, false
+	}
+
+	return e.answers, true
+}
+
+func (c *blockedHostIPCache) set(host string, answers []dns.RR, ttl time.Duration) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if len(answers) == 0 {
+		return
+	}
+
+	if ttl <= 0 || ttl > blockedHostIPCacheTTL {
+		ttl = blockedHostIPCacheTTL
+	}
+
+	if len(c.m) >= blockedHostIPCacheMax {
+		// Evict all entries once the limit is reached.  Blocked-host
+		// lists are typically small, so rebuilding is cheap.
+		clear(c.m)
+	}
+
+	c.m[host] = blockedHostCacheEntry{
+		expiry:  time.Now().Add(ttl),
+		answers: answers,
+	}
+}
+
+func (c *blockedHostIPCache) clear() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	clear(c.m)
+}
+
 // genBlockedHost generates a blocked host response.  l, request, and d must not
 // be nil.
 func (s *Server) genBlockedHost(
@@ -344,7 +412,17 @@ func (s *Server) genBlockedHost(
 		return s.genResponseWithIPs(ctx, request, []netip.Addr{ip})
 	}
 
-	// look up the hostname, TODO: cache
+	if answers, ok := s.blockedHostIPCache.get(newAddr); ok {
+		resp := s.replyCompressed(request)
+		for _, answer := range answers {
+			answer.Header().Name = request.Question[0].Name
+			resp.Answer = append(resp.Answer, answer)
+		}
+
+		return resp
+	}
+
+	// look up the hostname
 	replReq := dns.Msg{}
 	replReq.SetQuestion(dns.Fqdn(newAddr), request.Question[0].Qtype)
 	replReq.RecursionDesired = true
@@ -375,12 +453,18 @@ func (s *Server) genBlockedHost(
 	}
 
 	resp := s.replyCompressed(request)
+	var minTTL uint32
 	if newContext.Res != nil {
 		for _, answer := range newContext.Res.Answer {
 			answer.Header().Name = request.Question[0].Name
 			resp.Answer = append(resp.Answer, answer)
+			if t := answer.Header().Ttl; t > 0 && (minTTL == 0 || t < minTTL) {
+				minTTL = t
+			}
 		}
 	}
+
+	s.blockedHostIPCache.set(newAddr, resp.Answer, time.Duration(minTTL)*time.Second)
 
 	return resp
 }

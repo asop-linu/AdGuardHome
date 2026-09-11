@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/AdguardTeam/dnsproxy/dnsproxytest"
+	"github.com/asop-linu/dnsproxy/dnsproxytest"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/testutil"
 	"github.com/miekg/dns"

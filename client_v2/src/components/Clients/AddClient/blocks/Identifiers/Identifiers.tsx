@@ -81,7 +81,7 @@ export const Identifiers = () => {
                 {intl.getMessage('clients_identifiers_desc', {
                     a: (text: string) => (
                         <a
-                            href="https://github.com/AdguardTeam/AdGuardHome/wiki/Clients#idclient"
+                            href="https://github.com/asop-linu/AdGuardHome/wiki/Clients#idclient"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
