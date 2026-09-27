@@ -401,14 +401,14 @@ func (web *webAPI) handleHTTPSRedirect(w http.ResponseWriter, r *http.Request) (
 		respHdr.Set(httphdr.AltSvc, altSvc)
 	}
 
+	if forceHTTPS && r.TLS == nil {
+		u := httpsURL(r.URL, host, portHTTPS)
+		http.Redirect(w, r, u.String(), http.StatusTemporaryRedirect)
+
+		return false
+	}
+
 	if forceHTTPS {
-		if r.TLS == nil {
-			u := httpsURL(r.URL, host, portHTTPS)
-			http.Redirect(w, r, u.String(), http.StatusTemporaryRedirect)
-
-			return false
-		}
-
 		// TODO(a.garipov): Consider adding a configurable max-age.  Currently,
 		// the default is 365 days.
 		respHdr.Set(httphdr.StrictTransportSecurity, aghhttp.HdrValStrictTransportSecurity)
@@ -425,25 +425,34 @@ func (web *webAPI) handleHTTPSRedirect(w http.ResponseWriter, r *http.Request) (
 	// previous behavior.
 	//
 	// See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin.
-	origin := r.Header.Get(httphdr.Origin)
-	acov := ""
-	if origin == "" {
-		// Same-origin request.  Preserve the historical behavior of
-		// reflecting the request origin.
-		acov = (&url.URL{
-			Scheme: originScheme(r.TLS != nil),
-			Host:   r.Host,
-		}).String()
-	} else if o, err := url.Parse(origin); err == nil && o.Host == r.Host {
-		acov = o.String()
-	}
-
 	respHdr.Set(httphdr.Vary, httphdr.Origin)
-	if acov != "" {
+	if acov := requestAllowOrigin(r); acov != "" {
 		respHdr.Set(httphdr.AccessControlAllowOrigin, acov)
 	}
 
 	return true
+}
+
+// requestAllowOrigin returns the value of the Access-Control-Allow-Origin
+// header for r, or an empty string if the request's origin should not be
+// reflected.  r must not be nil.
+func requestAllowOrigin(r *http.Request) (acov string) {
+	origin := r.Header.Get(httphdr.Origin)
+	if origin == "" {
+		// Same-origin request.  Preserve the historical behavior of
+		// reflecting the request origin.
+		return (&url.URL{
+			Scheme: originScheme(r.TLS != nil),
+			Host:   r.Host,
+		}).String()
+	}
+
+	o, err := url.Parse(origin)
+	if err != nil || o.Host != r.Host {
+		return ""
+	}
+
+	return o.String()
 }
 
 // originScheme returns the scheme of the request, taking its TLS state into

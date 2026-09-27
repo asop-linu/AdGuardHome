@@ -249,19 +249,26 @@ func (p *DefaultAddrProc) process(ctx context.Context, catchPanics bool) {
 	for {
 		select {
 		case <-p.quit:
-			// Drain the queue of the addresses queued before closing.
-			for {
-				select {
-				case ip := <-p.clientIPs:
-					handle(ip)
-				default:
-					p.logger.InfoContext(ctx, "finished processing addresses")
+			p.drainClientIPs(ctx, handle)
 
-					return
-				}
-			}
+			return
 		case ip := <-p.clientIPs:
 			handle(ip)
+		}
+	}
+}
+
+// drainClientIPs handles the addresses that were queued before closing until
+// the queue is empty, and then returns.  handle must not be nil.
+func (p *DefaultAddrProc) drainClientIPs(ctx context.Context, handle func(netip.Addr)) {
+	for {
+		select {
+		case ip := <-p.clientIPs:
+			handle(ip)
+		default:
+			p.logger.InfoContext(ctx, "finished processing addresses")
+
+			return
 		}
 	}
 }

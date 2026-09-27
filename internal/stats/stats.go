@@ -596,20 +596,7 @@ func (s *StatsCtx) loadUnits(limit uint32) (units []*unitDB, curID uint32) {
 		curID = s.unitIDGen()
 	}
 
-	// Per-hour units.  Iterate exactly limit-1 times so that the result is
-	// always well-formed even if curID is near the uint32 boundary, instead
-	// of relying on wraparound arithmetic and looping until the IDs match.
-	units = make([]*unitDB, 0, limit)
-	if limit > 1 {
-		firstID := curID - limit + 1
-		for i := 0; i < int(limit)-1; i++ {
-			u := s.loadUnitFromDB(tx, firstID+uint32(i))
-			if u == nil {
-				u = &unitDB{NResult: make([]uint64, resultLast)}
-			}
-			units = append(units, u)
-		}
-	}
+	units = s.loadPrevUnits(tx, curID, limit)
 
 	err = finishTxn(tx, false)
 	if err != nil {
@@ -621,6 +608,32 @@ func (s *StatsCtx) loadUnits(limit uint32) (units []*unitDB, curID uint32) {
 	}
 
 	return units, curID
+}
+
+// loadPrevUnits returns the limit-1 units preceding curID, substituting empty
+// units for the ones missing from the database.  The number of returned units
+// is exactly limit-1, so the caller can always append the current unit.  tx
+// must not be nil.
+func (s *StatsCtx) loadPrevUnits(tx *bbolt.Tx, curID, limit uint32) (units []*unitDB) {
+	units = make([]*unitDB, 0, limit)
+	if limit <= 1 {
+		return units
+	}
+
+	// Iterate exactly limit-1 times so that the result is always well-formed
+	// even if curID is near the uint32 boundary, instead of relying on
+	// wraparound arithmetic and looping until the IDs match.
+	firstID := curID - limit + 1
+	for i := 0; i < int(limit)-1; i++ {
+		u := s.loadUnitFromDB(tx, firstID+uint32(i))
+		if u == nil {
+			u = &unitDB{NResult: make([]uint64, resultLast)}
+		}
+
+		units = append(units, u)
+	}
+
+	return units
 }
 
 // ShouldCount returns true if request for the host should be counted.

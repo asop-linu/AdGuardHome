@@ -252,47 +252,47 @@ func (l *queryLog) decodeVTokenAndAddRule(
 func (l *queryLog) decodeResultRules(ctx context.Context, dec *json.Decoder, ent *logEntry) {
 	const msgPrefix = "decoding result rules"
 
-	for {
-		delimToken, err := dec.Token()
-		switch err {
-		case nil:
-			// Go on.
-		case io.EOF:
-			return
-		default:
-			l.logger.DebugContext(ctx, msgPrefix+"; token", slogutil.KeyError, err)
+	delimToken, err := dec.Token()
+	switch err {
+	case nil:
+		// Go on.
+	case io.EOF:
+		return
+	default:
+		l.logger.DebugContext(ctx, msgPrefix+"; token", slogutil.KeyError, err)
 
-			return
-		}
-
-		if d, ok := delimToken.(json.Delim); !ok {
-			return
-		} else if d != '[' {
-			l.logger.DebugContext(
-				ctx,
-				msgPrefix,
-				slogutil.KeyError, newUnexpectedDelimiterError(d),
-			)
-		}
-
-		err = l.decodeResultRuleToken(ctx, dec, ent)
-		switch {
-		case err == nil:
-			continue
-		case
-			err == io.EOF,
-			errors.Is(err, ErrEndOfToken):
-			return
-		default:
-			l.logger.DebugContext(ctx, msgPrefix+"; rule token", slogutil.KeyError, err)
-
-			return
-		}
+		return
 	}
+
+	d, ok := delimToken.(json.Delim)
+	if !ok {
+		return
+	} else if d != '[' {
+		l.logger.DebugContext(
+			ctx,
+			msgPrefix,
+			slogutil.KeyError, newUnexpectedDelimiterError(d),
+		)
+
+		return
+	}
+
+	// decodeResultRuleToken consumes the rest of the input and never returns a
+	// nil error.  A clean end of the input is signalled by [io.EOF] or
+	// [ErrEndOfToken], so only unexpected errors are worth logging.
+	err = l.decodeResultRuleToken(ctx, dec, ent)
+	if errors.Is(err, io.EOF) || errors.Is(err, ErrEndOfToken) {
+		return
+	}
+
+	l.logger.DebugContext(ctx, msgPrefix+"; rule token", slogutil.KeyError, err)
 }
 
 // decodeResultRuleToken decodes the tokens of "Rules" type to the logEntry ent.
 // All arguments must not be nil.
+//
+// It consumes the tokens until the rules slice is exhausted, so err is never
+// nil.  A clean end of the input is reported as [io.EOF] or [ErrEndOfToken].
 func (l *queryLog) decodeResultRuleToken(
 	ctx context.Context,
 	dec *json.Decoder,

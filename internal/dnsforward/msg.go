@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
-	"github.com/asop-linu/dnsproxy/proxy"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/urlfilter/rules"
+	"github.com/asop-linu/dnsproxy/proxy"
 	"github.com/miekg/dns"
 )
 
@@ -349,6 +349,9 @@ func newBlockedHostIPCache() (c *blockedHostIPCache) {
 	}
 }
 
+// get returns a copy of the cached records for host, if any entry is still
+// fresh.  The returned records are freshly copied, so callers may mutate them
+// (for example to set the owner name) without corrupting the cache.
 func (c *blockedHostIPCache) get(host string) (answers []dns.RR, ok bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -358,9 +361,16 @@ func (c *blockedHostIPCache) get(host string) (answers []dns.RR, ok bool) {
 		return nil, false
 	}
 
-	return e.answers, true
+	answers = make([]dns.RR, 0, len(e.answers))
+	for _, answer := range e.answers {
+		answers = append(answers, dns.Copy(answer))
+	}
+
+	return answers, true
 }
 
+// set stores a copy of answers for host with the given TTL, so that later
+// mutations of the caller's records do not affect the cached copy.
 func (c *blockedHostIPCache) set(host string, answers []dns.RR, ttl time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -379,9 +389,14 @@ func (c *blockedHostIPCache) set(host string, answers []dns.RR, ttl time.Duratio
 		clear(c.m)
 	}
 
+	stored := make([]dns.RR, 0, len(answers))
+	for _, answer := range answers {
+		stored = append(stored, dns.Copy(answer))
+	}
+
 	c.m[host] = blockedHostCacheEntry{
 		expiry:  time.Now().Add(ttl),
-		answers: answers,
+		answers: stored,
 	}
 }
 
@@ -413,13 +428,11 @@ func (s *Server) genBlockedHost(
 	}
 
 	if answers, ok := s.blockedHostIPCache.get(newAddr); ok {
-		resp := s.replyCompressed(request)
-		for _, answer := range answers {
-			answer.Header().Name = request.Question[0].Name
-			resp.Answer = append(resp.Answer, answer)
-		}
+		// The records returned by get are fresh copies, so rewriting the owner
+		// names below does not corrupt the cached entries.
+		cached, _ := s.replyWithAnswers(request, answers)
 
-		return resp
+		return cached
 	}
 
 	// look up the hostname
@@ -452,21 +465,37 @@ func (s *Server) genBlockedHost(
 		return s.NewMsgSERVFAIL(request)
 	}
 
-	resp := s.replyCompressed(request)
-	var minTTL uint32
-	if newContext.Res != nil {
-		for _, answer := range newContext.Res.Answer {
-			answer.Header().Name = request.Question[0].Name
-			resp.Answer = append(resp.Answer, answer)
-			if t := answer.Header().Ttl; t > 0 && (minTTL == 0 || t < minTTL) {
-				minTTL = t
-			}
-		}
-	}
+	resp, minTTL := s.replyWithAnswers(request, answersOrNil(newContext.Res))
 
 	s.blockedHostIPCache.set(newAddr, resp.Answer, time.Duration(minTTL)*time.Second)
 
 	return resp
+}
+
+// answersOrNil returns the answer section of m, or nil if m is nil.
+func answersOrNil(m *dns.Msg) (answers []dns.RR) {
+	if m == nil {
+		return nil
+	}
+
+	return m.Answer
+}
+
+// replyWithAnswers returns a compressed reply to req containing answers.  Each
+// answer's owner name is set to that of the question, since the answers were
+// resolved for a different name.  req must not be nil.
+func (s *Server) replyWithAnswers(req *dns.Msg, answers []dns.RR) (resp *dns.Msg, minTTL uint32) {
+	resp = s.replyCompressed(req)
+	for _, answer := range answers {
+		answer.Header().Name = req.Question[0].Name
+		resp.Answer = append(resp.Answer, answer)
+
+		if t := answer.Header().Ttl; t > 0 && (minTTL == 0 || t < minTTL) {
+			minTTL = t
+		}
+	}
+
+	return resp, minTTL
 }
 
 // Create REFUSED DNS response

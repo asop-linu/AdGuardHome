@@ -583,22 +583,7 @@ func (u *Updater) unpackZipFile(
 	}
 
 	if mode.IsDir() {
-		if name == "AdGuardHome" {
-			// Top-level AdGuardHome/.  Skip it.
-			//
-			// TODO(a.garipov): See the similar TODO in
-			// [Updater.unpackTarGzFile].
-			return "", nil
-		}
-
-		err = os.Mkdir(outputName, 0o755)
-		if err != nil && !errors.Is(err, os.ErrExist) {
-			return "", fmt.Errorf("creating directory %q: %w", outputName, err)
-		}
-
-		u.logger.InfoContext(ctx, "created directory", "name", outputName)
-
-		return "", nil
+		return "", u.unpackZipDir(ctx, outputName, name)
 	}
 
 	// Do not propagate arbitrary file modes from the archive.  Mask all the
@@ -621,6 +606,27 @@ func (u *Updater) unpackZipFile(
 	u.logger.InfoContext(ctx, "created file", "name", outputName)
 
 	return name, nil
+}
+
+// unpackZipDir creates the directory outputName, which is a directory entry of
+// the archive named name.  name and outputName must not be empty.
+func (u *Updater) unpackZipDir(ctx context.Context, outputName, name string) (err error) {
+	if name == "AdGuardHome" {
+		// Top-level AdGuardHome/.  Skip it.
+		//
+		// TODO(a.garipov): See the similar TODO in
+		// [Updater.unpackTarGzFile].
+		return nil
+	}
+
+	err = os.Mkdir(outputName, 0o755)
+	if err != nil && !errors.Is(err, os.ErrExist) {
+		return fmt.Errorf("creating directory %q: %w", outputName, err)
+	}
+
+	u.logger.InfoContext(ctx, "created directory", "name", outputName)
+
+	return nil
 }
 
 // safeJoinName joins an untrusted archive entry name to a destination
