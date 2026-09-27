@@ -92,7 +92,9 @@
               ;
       - 'name': 'Upload coverage'
         'uses': 'codecov/codecov-action@v5'
-        'if': "success() && matrix.os == 'ubuntu-latest' && secrets.CODECOV_TOKEN != ''"
+        'if': "success() && matrix.os == 'ubuntu-latest' && env.CODECOV_TOKEN != ''"
+        'env':
+          'CODECOV_TOKEN': '${{ secrets.CODECOV_TOKEN }}'
         'with':
           'token': '${{ secrets.CODECOV_TOKEN }}'
           'file': './cover.out'
