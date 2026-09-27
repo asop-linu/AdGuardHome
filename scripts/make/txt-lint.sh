@@ -3,7 +3,7 @@
 # This comment is used to simplify checking local copies of the script.  Bump
 # this number every time a significant change is made to this script.
 #
-# AdGuard-Project-Version: 14
+# AdGuard-Project-Version: 15
 
 # Don't use -f, because we use globs in this script.
 set -e -o 'pipefail' -u
@@ -39,6 +39,7 @@ trailing_newlines() (
 		-o -name '*.test' \
 		-o -name '*.woff2' \
 		-o -name '*.zip' \
+		-o -name '*.pgo' \
 		-o -name 'AdGuardHome' \
 		-o -name 'adguard-home' \
 		')' \
@@ -67,6 +68,7 @@ trailing_whitespace() {
 		-o -name '*.test' \
 		-o -name '*.woff2' \
 		-o -name '*.zip' \
+		-o -name '*.pgo' \
 		-o -name 'AdGuardHome' \
 		-o -name 'adguard-home' \
 		')' \
