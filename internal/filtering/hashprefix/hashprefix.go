@@ -12,11 +12,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/asop-linu/dnsproxy/upstream"
 	"github.com/AdguardTeam/golibs/cache"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil"
 	"github.com/AdguardTeam/golibs/stringutil"
+	"github.com/asop-linu/dnsproxy/upstream"
 	"github.com/miekg/dns"
 	"golang.org/x/net/publicsuffix"
 )
@@ -82,17 +82,17 @@ type Checker struct {
 	// cache stores hostname hashes.
 	cache cache.Cache
 
-	// txtSuffix is the TXT suffix for DNS request.
-	txtSuffix string
-
-	// cacheTime is the time period to store hash.
-	cacheTime time.Duration
-
 	// inflight guards the inFlight map of pending upstream lookups keyed by
 	// question, to avoid duplicate concurrent queries for the same hash prefix
 	// set.
 	inflight *sync.Mutex
 	inFlight map[string]*inFlightLookup
+
+	// txtSuffix is the TXT suffix for DNS request.
+	txtSuffix string
+
+	// cacheTime is the time period to store hash.
+	cacheTime time.Duration
 }
 
 // inFlightLookup is a single in-progress hash-prefix lookup.  Its result is
@@ -140,7 +140,7 @@ func (c *Checker) Check(host string) (ok bool, err error) {
 	// Deduplicate concurrent lookups for the same data to avoid hammering the
 	// upstream with identical queries under load.
 	c.inflight.Lock()
-	if iq, ok := c.inFlight[question]; ok && !lookupDone(iq.done) {
+	if iq, inFlight := c.inFlight[question]; inFlight && !lookupDone(iq.done) {
 		c.inflight.Unlock()
 
 		<-iq.done

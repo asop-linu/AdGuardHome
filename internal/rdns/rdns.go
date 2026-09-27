@@ -70,14 +70,14 @@ type Default struct {
 	// exchanger resolves IP addresses to domain names.
 	exchanger Exchanger
 
-	// cacheTTL is the Time to Live duration for cached IP addresses.
-	cacheTTL time.Duration
-
 	// inflight guards inFlight, the map of unresolved in-progress resolutions
 	// keyed by IP address.  It is used to avoid duplicate concurrent upstream
 	// queries for the same address.
 	inflight *sync.Mutex
 	inFlight map[netip.Addr]*inFlightQuery
+
+	// cacheTTL is the Time to Live duration for cached IP addresses.
+	cacheTTL time.Duration
 }
 
 // inFlightQuery tracks a single in-progress rDNS resolution so that concurrent

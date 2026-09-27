@@ -6,10 +6,10 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/asop-linu/dnsproxy/proxy"
-	"github.com/asop-linu/dnsproxy/upstream"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
+	"github.com/asop-linu/dnsproxy/proxy"
+	"github.com/asop-linu/dnsproxy/upstream"
 	"github.com/miekg/dns"
 )
 

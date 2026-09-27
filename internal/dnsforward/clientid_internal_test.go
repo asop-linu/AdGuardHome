@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/asop-linu/dnsproxy/proxy"
 	"github.com/AdguardTeam/golibs/testutil"
+	"github.com/asop-linu/dnsproxy/proxy"
 	"github.com/stretchr/testify/assert"
 )
 

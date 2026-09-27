@@ -20,7 +20,7 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 ### Security
 
-- Go version has been updated to prevent the possibility of exploiting the Go vulnerabilities fixed in [1.26.8][go-1.26.8].
+- Go version has been updated to 1.27.1 to prevent the possibility of exploiting the Go vulnerabilities fixed in [1.26.8][go-1.26.8].
 
 ### Changed
 
@@ -31,10 +31,17 @@ NOTE: Add new changes BELOW THIS COMMENT.
 - Enabled profile-guided optimization (PGO) builds via `--pgo=auto`.
 - Reduced lock contention in the legacy client storage subsystem.
 - Made the client address processor lock-free.
+- Stopped the filtering-rules updates loop from blocking while a large ruleset is being rebuilt, so that scheduled refreshes and shutdown stay responsive.
+- Serialized the filtering-rules rebuild triggered by a scheduled refresh with the asynchronous one, so that only one engine is ever built at a time.
 
 ### Fixed
 
 - DHCP server persisting uncommitted leases with zero expiry after `DHCPDISCOVER` messages ([#8572]).
+- Filtering rules being rebuilt in the updates loop, which stalled scheduled refreshes and delayed shutdown for as long as the rebuild took, most noticeably with multi-million-rule lists.
+- A filtering-rules request that arrived while another rebuild was in progress being dropped instead of applied, which could leave a deleted or updated list active.
+- Shutdown resetting the rules storage while an asynchronous rules rebuild was still running, after which the worker could swap a newly built engine in and reopen the already closed storage.
+- A repeated shutdown hanging forever when sending the stop signal to the updates loop, whose channel was already full.
+- A panic during an asynchronous rules rebuild leaving the filter in a state where shutdown would block forever.
 
 [#8572]:       https://github.com/AdguardTeam/AdGuardHome/issues/8572
 [dnsproxy-fork]: https://github.com/asop-linu/dnsproxy

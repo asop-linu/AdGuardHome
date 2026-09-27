@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/asop-linu/dnsproxy/dnsproxytest"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/testutil"
+	"github.com/asop-linu/dnsproxy/dnsproxytest"
 	"github.com/miekg/dns"
 )
 

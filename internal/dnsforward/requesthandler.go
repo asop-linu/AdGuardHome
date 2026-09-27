@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
-	"github.com/asop-linu/dnsproxy/proxy"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
+	"github.com/asop-linu/dnsproxy/proxy"
 )
 
 // type check

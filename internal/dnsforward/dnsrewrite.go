@@ -6,9 +6,9 @@ import (
 	"net/netip"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
-	"github.com/asop-linu/dnsproxy/proxy"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/urlfilter/rules"
+	"github.com/asop-linu/dnsproxy/proxy"
 	"github.com/miekg/dns"
 )
 
