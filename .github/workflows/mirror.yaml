@@ -14,8 +14,13 @@
       'team': 'go'
 'name': 'Mirror'
 'on':
+  # NOTE: This workflow mirrors master to AdguardTeam/AdGuardHome using
+  # AdGuard's private mirror action, so it can only ever run there.  On
+  # forks the private reusable workflow reference cannot even be resolved,
+  # which fails the whole run during setup despite the owner gate below.
+  # Keep the file for upstream sync, but never trigger it here.
   'push':
-    'branches': ['master']
+    'branches': ['never-match-any-branch']
   'workflow_dispatch': null
 # Permissions are disabled for all the jobs by default, and then overridden for
 # specific jobs if needed.  This is a recommended practice for security reasons,
