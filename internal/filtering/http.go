@@ -418,6 +418,12 @@ type filteringConfig struct {
 	UserRules        []string     `json:"user_rules"`
 	Interval         uint32       `json:"interval"` // in hours
 	Enabled          bool         `json:"enabled"`
+
+	// ApplyError is the error from the most recent asynchronous rebuild of the
+	// filtering engine, if it failed.  A non-empty value means the active engine
+	// is stale, since a failed rebuild leaves the previous one in place.  It is
+	// empty when the last rebuild succeeded, or before the first one ran.
+	ApplyError string `json:"apply_error"`
 }
 
 func filterToJSON(f FilterYAML) filterJSON {
@@ -454,6 +460,12 @@ func (d *DNSFilter) handleFilteringStatus(w http.ResponseWriter, r *http.Request
 	}
 	resp.UserRules = d.conf.UserRules
 	d.conf.filtersMu.RUnlock()
+
+	// Report a failed asynchronous rebuild, so that a stale engine is not
+	// mistaken for an applied configuration.
+	if err := d.lastFiltersInitError(); err != nil {
+		resp.ApplyError = err.Error()
+	}
 
 	aghhttp.WriteJSONResponseOK(r.Context(), d.logger, w, r, resp)
 }

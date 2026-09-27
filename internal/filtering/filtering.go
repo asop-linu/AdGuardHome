@@ -312,6 +312,13 @@ type DNSFilter struct {
 	// It is guarded by [DNSFilter.engineLock].
 	closed bool
 
+	// lastInitErr is the error returned by the most recent asynchronous filters
+	// initialization that failed, or nil if the last one succeeded.  It is
+	// reported through the filtering status API, since a failed rebuild leaves
+	// the previous engine in place.  It is guarded by
+	// [DNSFilter.filtersInitializerLock].
+	lastInitErr error
+
 	// Channel for passing data to filters-initializer goroutine
 	filtersInitializerChan chan filtersInitializerParams
 	filtersInitializerLock sync.Mutex
@@ -1204,6 +1211,11 @@ func (d *DNSFilter) filtersInitializer(
 
 	for {
 		err := d.initFiltering(ctx, params.allowFilters, params.blockFilters)
+
+		d.filtersInitializerLock.Lock()
+		d.lastInitErr = err
+		d.filtersInitializerLock.Unlock()
+
 		if err != nil {
 			d.logger.ErrorContext(ctx, "initializing", slogutil.KeyError, err)
 		}
@@ -1221,6 +1233,17 @@ func (d *DNSFilter) filtersInitializer(
 		params = *next
 		d.filtersInitializerLock.Unlock()
 	}
+}
+
+// lastFiltersInitError returns the error from the most recent asynchronous
+// filters initialization that failed, or nil if the last one succeeded or none
+// has run yet.  A non-nil result means the currently active engine is stale,
+// since a failed rebuild leaves the previous one in place.
+func (d *DNSFilter) lastFiltersInitError() (err error) {
+	d.filtersInitializerLock.Lock()
+	defer d.filtersInitializerLock.Unlock()
+
+	return d.lastInitErr
 }
 
 // finishFiltersInitializerLocked marks the asynchronous filters

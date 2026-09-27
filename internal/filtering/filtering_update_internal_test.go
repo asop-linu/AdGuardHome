@@ -159,7 +159,37 @@ func TestDNSFilter_close_unblocksPanickingInitializer(t *testing.T) {
 	testutil.RequireReceive(t, closed, initTimeout)
 }
 
-// awaitFiltersInitializerStart blocks until an asynchronous filters
+// TestDNSFilter_reportsInitError checks that a failed asynchronous rebuild is
+// reported, since it leaves the previous, stale engine in place.
+func TestDNSFilter_reportsInitError(t *testing.T) {
+	d, dataDir := newTestFilter(t)
+	t.Cleanup(d.Close)
+
+	// Nothing has run yet, so there is nothing to report.
+	assert.NoError(t, d.lastFiltersInitError())
+
+	// Two in-memory lists with the same ID make the rule storage creation fail.
+	// A filter with a missing file would not, since such filters are skipped.
+	d.runFiltersInitializer(context.TODO(), filtersInitializerParams{
+		blockFilters: []Filter{
+			{ID: 1, Data: []byte("||dup.example.com^\n")},
+			{ID: 1, Data: []byte("||dup2.example.com^\n")},
+		},
+	})
+	d.waitFiltersInitializer()
+
+	assert.Error(t, d.lastFiltersInitError())
+
+	// A subsequent successful rebuild must clear the error.
+	flt := writeTestFilterFile(t, dataDir, 1, 10)
+	d.runFiltersInitializer(context.TODO(), filtersInitializerParams{
+		blockFilters: []Filter{flt},
+	})
+	d.waitFiltersInitializer()
+
+	assert.NoError(t, d.lastFiltersInitError())
+}
+
 // initialization is running, or the timeout expires.
 func awaitFiltersInitializerStart(t *testing.T, d *DNSFilter) {
 	t.Helper()

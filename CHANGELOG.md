@@ -39,6 +39,7 @@ NOTE: Add new changes BELOW THIS COMMENT.
 - DHCP server persisting uncommitted leases with zero expiry after `DHCPDISCOVER` messages ([#8572]).
 - Filtering rules being rebuilt in the updates loop, which stalled scheduled refreshes and delayed shutdown for as long as the rebuild took, most noticeably with multi-million-rule lists.
 - A filtering-rules request that arrived while another rebuild was in progress being dropped instead of applied, which could leave a deleted or updated list active.
+- A failed asynchronous rebuild of the filtering engine being invisible to the user, who would keep the stale engine without any indication; the error is now reported in the `apply_error` field of `/control/filtering/status`.
 - Shutdown resetting the rules storage while an asynchronous rules rebuild was still running, after which the worker could swap a newly built engine in and reopen the already closed storage.
 - A repeated shutdown hanging forever when sending the stop signal to the updates loop, whose channel was already full.
 - A panic during an asynchronous rules rebuild leaving the filter in a state where shutdown would block forever.
