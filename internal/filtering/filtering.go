@@ -293,6 +293,25 @@ type DNSFilter struct {
 	// done is the channel to signal to stop running filters updates loop.
 	done chan struct{}
 
+	// filtersInitializerDone is closed when the currently running asynchronous
+	// filters initialization, if any, has finished.
+	filtersInitializerDone chan struct{}
+
+	// filtersInitializerRunning reports whether an asynchronous filters
+	// initialization is currently in progress.  It is guarded by
+	// [DNSFilter.filtersInitializerLock].
+	filtersInitializerRunning bool
+
+	// filtersInitializerPending is the most recent request that arrived while an
+	// initialization was in progress.  It is applied once the current one
+	// finishes.  It is guarded by [DNSFilter.filtersInitializerLock].
+	filtersInitializerPending *filtersInitializerParams
+
+	// closed reports whether Close has already been called.  It makes Close
+	// idempotent, which also guards against closing the rules storage twice.
+	// It is guarded by [DNSFilter.engineLock].
+	closed bool
+
 	// Channel for passing data to filters-initializer goroutine
 	filtersInitializerChan chan filtersInitializerParams
 	filtersInitializerLock sync.Mutex
@@ -373,15 +392,7 @@ func (d *DNSFilter) setFilters(
 		defer d.filtersInitializerLock.Unlock()
 
 		// Remove all pending tasks.
-	removeLoop:
-		for {
-			select {
-			case <-d.filtersInitializerChan:
-				// Continue removing.
-			default:
-				break removeLoop
-			}
-		}
+		d.drainFiltersInitializerChan()
 
 		d.filtersInitializerChan <- params
 
@@ -391,15 +402,43 @@ func (d *DNSFilter) setFilters(
 	return d.initFiltering(ctx, allowFilters, blockFilters)
 }
 
+// signalUpdatesLoopStop asks the updates loop to stop.  It never blocks: a
+// repeated call is a no-op, either because the loop has already been stopped or
+// because the previous signal has not been consumed yet, in which case the
+// shutdown is already pending.
+func (d *DNSFilter) signalUpdatesLoopStop() {
+	if d.done == nil {
+		return
+	}
+
+	select {
+	case d.done <- struct{}{}:
+		// The loop has been notified.
+	default:
+		// Nothing to do.
+	}
+}
+
 // Close - close the object
 func (d *DNSFilter) Close() {
+	// Stop the updates loop first, without holding the engine lock: the loop
+	// may be waiting for the filters initializer, and the initializer itself
+	// takes the engine lock while swapping the engine in.
+	d.signalUpdatesLoopStop()
+
+	// Wait for the asynchronous filters initialization to finish.  Otherwise
+	// the worker could swap a freshly built engine in, and reopen the rules
+	// storage, after reset has already closed it below.
+	d.waitFiltersInitializer()
+
 	d.engineLock.Lock()
 	defer d.engineLock.Unlock()
 
-	if d.done != nil {
-		d.done <- struct{}{}
+	if d.closed {
+		return
 	}
 
+	d.closed = true
 	d.reset(context.TODO())
 }
 
@@ -1097,21 +1136,132 @@ func (d *DNSFilter) updatesLoop(ctx context.Context) {
 	for {
 		select {
 		case params := <-d.filtersInitializerChan:
-			err := d.initFiltering(ctx, params.allowFilters, params.blockFilters)
-			if err != nil {
-				d.logger.ErrorContext(ctx, "initializing", slogutil.KeyError, err)
-
-				continue
-			}
+			// Rebuilding a multi-million-rule engine takes seconds, and
+			// previously it ran inline, which stalled this loop: the periodic
+			// refresh and the shutdown signal were not handled until the new
+			// engine was ready.  Run it separately so that the loop stays
+			// responsive.
+			d.runFiltersInitializer(ctx, params)
 		case <-t.C:
 			ivl = d.periodicallyRefreshFilters(ivl)
 			t.Reset(ivl)
 		case <-d.done:
 			t.Stop()
+			d.waitFiltersInitializer()
 
 			return
 		}
 	}
+}
+
+// runFiltersInitializer starts initializing d in a separate goroutine, unless
+// an initialization is already in progress, in which case params is stored as
+// the pending request and applied once the current one finishes.  It never
+// blocks.
+func (d *DNSFilter) runFiltersInitializer(
+	ctx context.Context,
+	params filtersInitializerParams,
+) {
+	d.filtersInitializerLock.Lock()
+	defer d.filtersInitializerLock.Unlock()
+
+	if d.filtersInitializerRunning {
+		// Keep only the most recent request, so that the configuration that is
+		// eventually applied is the newest one.
+		d.filtersInitializerPending = &params
+
+		return
+	}
+
+	done := make(chan struct{})
+	d.filtersInitializerDone = done
+	d.filtersInitializerRunning = true
+
+	go d.filtersInitializer(ctx, params, done)
+}
+
+// filtersInitializer applies params and then any request that was queued while
+// it was running.  done is closed once no request remains.
+func (d *DNSFilter) filtersInitializer(
+	ctx context.Context,
+	params filtersInitializerParams,
+	done chan struct{},
+) {
+	// On a panic, the bookkeeping below would otherwise be skipped, leaving
+	// filtersInitializerRunning set and done unclosed, which would make
+	// waitFiltersInitializer, and therefore Close, block forever.
+	defer func() {
+		if p := recover(); p != nil {
+			d.logger.ErrorContext(ctx, "recovered in filters initializer", "panic", p)
+
+			d.filtersInitializerLock.Lock()
+			defer d.filtersInitializerLock.Unlock()
+
+			d.filtersInitializerPending = nil
+			d.finishFiltersInitializerLocked(done)
+		}
+	}()
+
+	for {
+		err := d.initFiltering(ctx, params.allowFilters, params.blockFilters)
+		if err != nil {
+			d.logger.ErrorContext(ctx, "initializing", slogutil.KeyError, err)
+		}
+
+		d.filtersInitializerLock.Lock()
+		next := d.filtersInitializerPending
+		d.filtersInitializerPending = nil
+		if next == nil {
+			d.finishFiltersInitializerLocked(done)
+			d.filtersInitializerLock.Unlock()
+
+			return
+		}
+
+		params = *next
+		d.filtersInitializerLock.Unlock()
+	}
+}
+
+// finishFiltersInitializerLocked marks the asynchronous filters
+// initialization as no longer running and unblocks waitFiltersInitializer by
+// closing done.  d's filtersInitializerLock must be held, and done must be the
+// channel currently stored in d.filtersInitializerDone, so that it is only
+// closed once.
+func (d *DNSFilter) finishFiltersInitializerLocked(done chan struct{}) {
+	d.filtersInitializerRunning = false
+	d.filtersInitializerDone = nil
+	close(done)
+}
+
+// drainFiltersInitializerChan removes all pending initialization tasks.  d's
+// filtersInitializerLock must be held.
+func (d *DNSFilter) drainFiltersInitializerChan() {
+	for {
+		select {
+		case <-d.filtersInitializerChan:
+			// Continue removing.
+		default:
+			return
+		}
+	}
+}
+
+// waitFiltersInitializer blocks until the currently running asynchronous
+// initialization, including any request that was queued while it was running,
+// has finished.
+func (d *DNSFilter) waitFiltersInitializer() {
+	d.filtersInitializerLock.Lock()
+	done := d.filtersInitializerDone
+	d.filtersInitializerLock.Unlock()
+
+	if done == nil {
+		return
+	}
+
+	// Don't hold the lock while waiting: the initializer needs it to finish and
+	// close the channel.
+	<-done
 }
 
 // periodicallyRefreshFilters checks for filters updates and returns time

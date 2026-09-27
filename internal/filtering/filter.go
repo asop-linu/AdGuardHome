@@ -449,7 +449,15 @@ func (d *DNSFilter) refreshFiltersIntl(block, allow, force bool) (int, bool) {
 		return 0, false
 	}
 
-	d.EnableFilters(false)
+	// Rebuild the engine through the same serialized worker that serves the
+	// update loop.  Enabling the filters inline would build a second engine
+	// concurrently with a rebuild that may already be in progress, and the two
+	// would race over the rules storage.
+	//
+	// TODO(a.garipov):  Report the failure of the asynchronous rebuild through
+	// the filtering status API, so that a stale engine is not mistaken for a
+	// successfully applied configuration.
+	d.EnableFilters(true)
 
 	for i := range lists {
 		if toUpd[i] {
