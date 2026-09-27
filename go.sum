@@ -20,8 +20,8 @@ github.com/ameshkov/dnsstamps v1.0.3 h1:Srzik+J9mivH1alRACTbys2xOxs0lRH9qnTA7Y1O
 github.com/ameshkov/dnsstamps v1.0.3/go.mod h1:Ii3eUu73dx4Vw5O4wjzmT5+lkCwovjzaEZZ4gKyIH5A=
 github.com/anthropics/anthropic-sdk-go v1.63.1 h1:M9dIoZzUWB453ulVpBkQp3FX0769udzrTscDrsJk1w4=
 github.com/anthropics/anthropic-sdk-go v1.63.1/go.mod h1:3EfIfmFqxH6rbiLcIP4tPFyXL/IHakx2wDG4OU+TIEI=
-github.com/asop-linu/dnsproxy v0.0.0-20260911215715-52638946de52 h1:2dXGLqYQ1pK1bhin3rxz8q35AX7ZuwvwE6/SJlgC0BI=
-github.com/asop-linu/dnsproxy v0.0.0-20260911215715-52638946de52/go.mod h1:UCKNEPUF23EpqXdbyvsqQftfeDb/7p1N8i/rzdd9iVM=
+github.com/asop-linu/dnsproxy v0.0.0-20260927103119-66ed0535ec71 h1:2Fg/85tu0aHmzJo7TYc0l/tMAEX/RmbSqxKnWl6qIiw=
+github.com/asop-linu/dnsproxy v0.0.0-20260927103119-66ed0535ec71/go.mod h1:zC4KX6luKOKclazblVOMze1k5Hi0lTD6prbsUDqvJAY=
 github.com/bahlo/generic-list-go v0.2.0 h1:5sz/EEAK+ls5wF+NeqDpk5+iNdMDXrh3z3nPnH1Wvgk=
 github.com/bahlo/generic-list-go v0.2.0/go.mod h1:2KvAjgMlE5NNynlg/5iLrrCCZ2+5xWbdbCW3pNTGyYg=
 github.com/beefsack/go-rate v0.0.0-20220214233405-116f4ca011a0 h1:0b2vaepXIfMsG++IsjHiI2p4bxALD1Y2nQKGMR5zDQM=
