@@ -1,13 +1,13 @@
 module github.com/AdguardTeam/AdGuardHome
 
-go 1.27.1
+go 1.27.2
 
 require (
 	github.com/AdguardTeam/dnscrypt v0.0.2
 	github.com/AdguardTeam/golibs v0.35.15
 	github.com/AdguardTeam/urlfilter v0.23.4
 	github.com/NYTimes/gziphandler v1.1.1
-	github.com/asop-linu/dnsproxy v0.0.0-20260927103119-66ed0535ec71
+	github.com/asop-linu/dnsproxy v0.0.0-20261011015046-4bafb8a191cd
 	github.com/bluele/gcache v0.0.2
 	github.com/c2h5oh/datasize v0.0.0-20231215233829-aa82cc1e6500
 	github.com/digineo/go-ipset/v2 v2.2.1
@@ -38,9 +38,9 @@ require (
 	go.etcd.io/bbolt v1.5.0
 	// TODO(e.burkov): Update to a stable tag.
 	go.yaml.in/yaml/v4 v4.0.0-rc.6
-	golang.org/x/crypto v0.56.0
-	golang.org/x/net v0.58.0
-	golang.org/x/sys v0.47.0
+	golang.org/x/crypto v0.58.0
+	golang.org/x/net v0.60.0
+	golang.org/x/sys v0.49.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	howett.net/plist v1.0.1
 )
@@ -102,12 +102,12 @@ require (
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/exp v0.0.0-20260813180055-c1d0aacb2297 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20260813180055-c1d0aacb2297 // indirect
-	golang.org/x/mod v0.40.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/telemetry v0.0.0-20260814151720-d8c169486af1 // indirect
-	golang.org/x/term v0.45.0 // indirect
-	golang.org/x/text v0.41.0 // indirect
-	golang.org/x/tools v0.49.0 // indirect
+	golang.org/x/mod v0.41.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
+	golang.org/x/telemetry v0.0.0-20260924152758-ed294f943157 // indirect
+	golang.org/x/term v0.47.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
+	golang.org/x/tools v0.51.0 // indirect
 	golang.org/x/vuln v1.7.0 // indirect
 	gonum.org/v1/gonum v0.17.0 // indirect
 	google.golang.org/api v0.293.0 // indirect

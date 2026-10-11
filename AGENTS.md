@@ -48,7 +48,7 @@ Repo root for AdGuard Home. Go 1.27 backend under `internal/`; two frontends:
 
 ## Gotchas
 
-- `GOTOOLCHAIN` in the Makefile matches `go.mod` (`go 1.27.1`). If `make` tries to fetch a toolchain, run targets with `GOTOOLCHAIN=local`.
+- `GOTOOLCHAIN` in the Makefile matches `go.mod` (`go 1.27.2`). If `make` tries to fetch a toolchain, run targets with `GOTOOLCHAIN=local`.
 - The release/test pipeline runs `make deps test go-bench go-fuzz`; `go-test` uses a fixed 90s per-package timeout — very slow integration tests can need `TIMEOUT_FLAGS`.
 - Do not edit `go.mod` deps by hand for tooling; add to the `tool` block and run `go mod tidy`.
 - Generated/ignored dirs (`build/`, `dist/`, `data/`, `tmp/`, `node_modules/`, `*.test` binaries) are build outputs, not source.

@@ -63,6 +63,7 @@ type dnsConfig struct {
 	BootstrapPreferIPv6 bool               `yaml:"bootstrap_prefer_ipv6"`
 	RefuseAny           bool               `yaml:"refuse_any"`
 	UseDNS64            bool               `yaml:"use_dns64"`
+	DNSSEC              bool               `yaml:"dnssec"`
 }
 
 // type check

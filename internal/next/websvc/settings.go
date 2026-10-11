@@ -40,6 +40,7 @@ func (svc *Service) handleGetSettingsAll(w http.ResponseWriter, r *http.Request)
 			CacheSize:           dnsConf.CacheSize,
 			RefuseAny:           dnsConf.RefuseAny,
 			UseDNS64:            dnsConf.UseDNS64,
+			DNSSECEnabled:       dnsConf.DNSSECEnabled,
 		},
 		HTTP: &HTTPAPIHTTPSettings{
 			Addresses:       httpConf.Addresses,

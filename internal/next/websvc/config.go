@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"io/fs"
 	"log/slog"
+	"net/http"
 	"net/netip"
 	"time"
 )
@@ -16,6 +17,11 @@ type Config struct {
 
 	// Pprof is the configuration for the pprof debug API.  It must not be nil.
 	Pprof *PprofConfig
+
+	// DoH is the configuration for serving DNS-over-HTTPS requests on this
+	// service's addresses.  It may be nil, in which case no DoH requests are
+	// served.
+	DoH *DoHConfig
 
 	// ConfigManager is used to show information about services as well as
 	// dynamically reconfigure them.
@@ -57,6 +63,25 @@ type Config struct {
 type PprofConfig struct {
 	Port    uint16 `yaml:"port"`
 	Enabled bool   `yaml:"enabled"`
+}
+
+// DoHConfig is the configuration for serving DNS-over-HTTPS requests on the web
+// service's addresses.
+type DoHConfig struct {
+	// Handler serves the DoH requests.  It must not be nil if Routes is not
+	// empty.
+	Handler http.Handler
+
+	// Routes are the HTTP route patterns to serve the DoH requests on, e.g.
+	// "GET /dns-query".  If it is empty, [DefaultDoHRoutes] are used.
+	Routes []string
+}
+
+// DefaultDoHRoutes are the HTTP route patterns that are used to serve DoH
+// requests if none are configured.
+var DefaultDoHRoutes = []string{
+	http.MethodGet + " " + PathPatternDoHQuery,
+	http.MethodPost + " " + PathPatternDoHQuery,
 }
 
 // Config returns the current configuration of the web service.  Config must not

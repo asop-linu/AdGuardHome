@@ -3,10 +3,18 @@
 # This comment is used to simplify checking local copies of the script.  Bump
 # this number every time a significant change is made to this script.
 #
-# AdGuard-Project-Version: 15
+# AdGuard-Project-Version: 16
 
 # Don't use -f, because we use globs in this script.
-set -e -o 'pipefail' -u
+set -e -u
+
+# pipefail is not supported by strict POSIX sh (e.g. dash), so enable it only
+# when the current shell understands it.  The Makefile invokes this script
+# with "$(SHELL)", which may be dash.  The option is probed in a subshell,
+# because a failing set is fatal in dash even with || true.
+if (set -o pipefail 2>/dev/null); then
+	set -o pipefail
+fi
 
 verbose="${VERBOSE:-0}"
 readonly verbose

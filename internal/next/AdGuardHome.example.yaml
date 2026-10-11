@@ -20,10 +20,18 @@ dns:
   bootstrap_prefer_ipv6: true
   refuse_any: true
   use_dns64: true
+  dnssec: true
 http:
   pprof:
     port: 6060
     enabled: true
+  doh:
+    routes:
+      - 'GET /dns-query'
+      - 'POST /dns-query'
+      - 'GET /dns-query/{ClientID}'
+      - 'POST /dns-query/{ClientID}'
+    insecure_enabled: true
   addresses:
     - '0.0.0.0:3000'
   secure_addresses: []

@@ -19,12 +19,13 @@ type Config struct {
 	// UpstreamMode defines how upstreams are used.
 	UpstreamMode proxy.UpstreamMode
 
+	// DoHRoutes are the HTTP route patterns on which to serve DNS-over-HTTPS
+	// requests.  Each route must be in the "METHOD /path" format, e.g.
+	// "GET /dns-query".  If it is empty, the default DoH routes are registered.
+	DoHRoutes []string
+
 	// Addresses are the addresses on which to serve plain DNS queries.
 	Addresses []netip.AddrPort
-
-	// BootstrapServers are the addresses of DNS servers used for bootstrapping
-	// the upstream DNS server addresses.
-	BootstrapServers []string
 
 	// UpstreamServers are the upstream DNS server addresses to use.
 	UpstreamServers []string
@@ -33,17 +34,21 @@ type Config struct {
 	// also [Config.UseDNS64].
 	DNS64Prefixes []netip.Prefix
 
+	// BootstrapServers are the addresses of DNS servers used for bootstrapping
+	// the upstream DNS server addresses.
+	BootstrapServers []string
+
 	// UpstreamTimeout is the timeout for upstream requests.
 	UpstreamTimeout time.Duration
+
+	// Ratelimit is the maximum number of requests per second from a given IP or
+	// subnet.  If it is zero, rate limiting is disabled.
+	Ratelimit int
 
 	// CacheSize is the maximum cache size in bytes.
 	//
 	// TODO(a.garipov):  Use bytesize.Bytes everywhere.
 	CacheSize int
-
-	// Ratelimit is the maximum number of requests per second from a given IP or
-	// subnet.  If it is zero, rate limiting is disabled.
-	Ratelimit int
 
 	// BootstrapPreferIPv6, if true, instructs the bootstrapper to prefer IPv6
 	// addresses to IPv4 ones when bootstrapping.
@@ -55,6 +60,11 @@ type Config struct {
 	// DNSSECEnabled specifies if the proxy should set the DO bits in the
 	// upstream requests.
 	DNSSECEnabled bool
+
+	// DoHInsecureEnabled allows DoH queries via unencrypted HTTP.  Note that the
+	// DoH requests are served on the web service's addresses, see
+	// [Config.DoHRoutes].
+	DoHInsecureEnabled bool
 
 	// RefuseAny, if true, refuses DNS queries with the type ANY.
 	RefuseAny bool

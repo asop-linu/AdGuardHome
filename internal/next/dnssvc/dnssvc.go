@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"net/http"
 	"net/netip"
+	"slices"
 	"sync/atomic"
 	"time"
 
@@ -43,15 +45,18 @@ type Service struct {
 	// The fields below have been used to create proxy and are saved to return
 	// them in [Service.Config].
 
+	bootstraps []string
+	dohRoutes  []string
+
 	// initialAddrs is the list of addresses that the service was configured to
 	// listen on.  It may have a zero port, in which case the real port will be
 	// set in [Service.Start].
-	initialAddrs []netip.AddrPort
-
-	bootstraps          []string
+	initialAddrs        []netip.AddrPort
 	bootstrapResolvers  []*upstream.UpstreamResolver
 	upstreams           []string
 	upstreamTimeout     time.Duration
+	ratelimit           int
+	dohInsecureEnabled  bool
 	bootstrapPreferIPv6 bool
 
 	// The fields above have been used to create proxy and are saved to return
@@ -86,10 +91,13 @@ func New(c *Config) (svc *Service, err error) {
 			UseDNS64:       c.UseDNS64,
 		},
 		initialAddrs:        c.Addresses,
+		dohRoutes:           slices.Clone(c.DoHRoutes),
+		dohInsecureEnabled:  c.DoHInsecureEnabled,
 		bootstraps:          c.BootstrapServers,
 		upstreams:           c.UpstreamServers,
 		upstreamTimeout:     c.UpstreamTimeout,
 		bootstrapPreferIPv6: c.BootstrapPreferIPv6,
+		ratelimit:           c.Ratelimit,
 	}
 
 	upstreams, resolvers, err := addressesToUpstreams(
@@ -115,10 +123,19 @@ func New(c *Config) (svc *Service, err error) {
 		UpstreamMode:   svc.proxyConf.UpstreamMode,
 		RequestHandler: rlMw.Wrap(proxy.DefaultHandler{}),
 		DNS64Prefs:     svc.proxyConf.DNS64Prefs,
+		CacheSizeBytes: svc.proxyConf.CacheSizeBytes,
 		CacheEnabled:   svc.proxyConf.CacheEnabled,
 		DNSSECEnabled:  svc.proxyConf.DNSSECEnabled,
 		RefuseAny:      svc.proxyConf.RefuseAny,
 		UseDNS64:       svc.proxyConf.UseDNS64,
+		// NOTE:  ListenAddresses is intentionally left empty: the DoH requests
+		// are served by the web service on its own addresses, see
+		// [Service.DoHHandler].  The proxy is only used as an [http.Handler]
+		// here, it doesn't open any HTTP listeners of its own.
+		HTTPConfig: &proxy.HTTPConfig{
+			Routes:          svc.dohRoutes,
+			InsecureEnabled: svc.dohInsecureEnabled,
+		},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("proxy: %w", err)
@@ -272,7 +289,11 @@ func (svc *Service) Config() (c *Config) {
 		}
 	}
 
-	// TODO(d.kolyshev): Fill ratelimit.
+	// NOTE:  All fields of [Config] that can be changed through the HTTP API
+	// must be returned here, since the configuration manager persists this
+	// configuration back to disk.  A field that is omitted below is silently
+	// reset to its zero value in the configuration file on the next settings
+	// update.
 	c = &Config{
 		Logger:              svc.logger,
 		UpstreamMode:        svc.proxyConf.UpstreamMode,
@@ -281,12 +302,30 @@ func (svc *Service) Config() (c *Config) {
 		UpstreamServers:     svc.upstreams,
 		DNS64Prefixes:       svc.proxyConf.DNS64Prefs,
 		UpstreamTimeout:     svc.upstreamTimeout,
+		Ratelimit:           svc.ratelimit,
 		CacheSize:           svc.proxyConf.CacheSizeBytes,
 		BootstrapPreferIPv6: svc.bootstrapPreferIPv6,
 		CacheEnabled:        svc.proxyConf.CacheEnabled,
+		DNSSECEnabled:       svc.proxyConf.DNSSECEnabled,
 		RefuseAny:           svc.proxyConf.RefuseAny,
 		UseDNS64:            svc.proxyConf.UseDNS64,
+		DoHRoutes:           slices.Clone(svc.dohRoutes),
+		DoHInsecureEnabled:  svc.dohInsecureEnabled,
 	}
 
 	return c
+}
+
+// DoHHandler returns the [http.Handler] that serves DNS-over-HTTPS requests.  A
+// nil *Service is a valid *Service that does nothing, in which case DoHHandler
+// returns nil.
+//
+// The returned handler enforces [Config.DoHInsecureEnabled] itself, rejecting
+// the requests that come over unencrypted HTTP.
+func (svc *Service) DoHHandler() (h http.Handler) {
+	if svc == nil {
+		return nil
+	}
+
+	return svc.proxy
 }

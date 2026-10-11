@@ -56,6 +56,7 @@ type HTTPAPIDNSSettings struct {
 	BootstrapPreferIPv6 bool `json:"bootstrap_prefer_ipv6"`
 	RefuseAny           bool `json:"refuse_any"`
 	UseDNS64            bool `json:"use_dns64"`
+	DNSSECEnabled       bool `json:"dnssec"`
 }
 
 // handlePatchSettingsDNS is the handler for the PATCH /api/v1/settings/dns HTTP
@@ -124,5 +125,6 @@ func (svc *Service) handlePatchSettingsDNS(w http.ResponseWriter, r *http.Reques
 		CacheSize:           newConf.CacheSize,
 		RefuseAny:           newConf.RefuseAny,
 		UseDNS64:            newConf.UseDNS64,
+		DNSSECEnabled:       newConf.DNSSECEnabled,
 	})
 }

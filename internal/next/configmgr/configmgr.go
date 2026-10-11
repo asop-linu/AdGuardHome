@@ -5,6 +5,7 @@
 package configmgr
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io/fs"
@@ -156,6 +157,8 @@ func (m *Manager) assemble(
 	webAddr netip.AddrPort,
 	start time.Time,
 ) (err error) {
+	dohRoutes, dohInsecureEnabled := dohSettings(conf.HTTP)
+
 	dnsConf := &dnssvc.Config{
 		Logger:              m.baseLogger.With(slogutil.KeyPrefix, "dnssvc"),
 		UpstreamMode:        conf.DNS.UpstreamMode,
@@ -170,11 +173,19 @@ func (m *Manager) assemble(
 		CacheEnabled:        conf.DNS.CacheSize > 0,
 		RefuseAny:           conf.DNS.RefuseAny,
 		UseDNS64:            conf.DNS.UseDNS64,
+		DNSSECEnabled:       conf.DNS.DNSSEC,
+		DoHRoutes:           dohRoutes,
+		DoHInsecureEnabled:  dohInsecureEnabled,
 	}
 	err = m.updateDNS(ctx, dnsConf)
 	if err != nil {
 		return fmt.Errorf("assembling dnssvc: %w", err)
 	}
+
+	// NOTE:  m.dns is used directly instead of [Manager.DNS], since m.updMu may
+	// already be locked by the caller.  The method is safe to call on a nil
+	// receiver.
+	dohHdlr := m.dns.DoHHandler()
 
 	webSvcConf := &websvc.Config{
 		Logger: m.baseLogger.With(slogutil.KeyPrefix, "websvc"),
@@ -192,6 +203,10 @@ func (m *Manager) assemble(
 		OverrideAddress: webAddr,
 		Timeout:         time.Duration(conf.HTTP.Timeout),
 		ForceHTTPS:      conf.HTTP.ForceHTTPS,
+		DoH: &websvc.DoHConfig{
+			Routes:  dohRoutes,
+			Handler: dohHdlr,
+		},
 	}
 
 	err = m.updateWeb(ctx, webSvcConf)
@@ -202,14 +217,35 @@ func (m *Manager) assemble(
 	return nil
 }
 
+// configFileIndent is the number of spaces used for a single indentation level
+// in the configuration file.  It must match the indentation used in
+// [AdGuardHome.example.yaml].
+const configFileIndent = 2
+
+// dohSettings returns the DNS-over-HTTPS routes and the flag allowing
+// unencrypted DoH requests from the on-disk configuration.  A nil conf, as well
+// as a configuration without the DoH block, results in an empty result.
+func dohSettings(conf *httpConfig) (routes []string, insecureEnabled bool) {
+	if conf == nil || conf.DoH == nil {
+		return nil, false
+	}
+
+	return slices.Clone(conf.DoH.Routes), conf.DoH.InsecureEnabled
+}
+
 // write writes the current configuration to disk.
 func (m *Manager) write(ctx context.Context) (err error) {
-	b, err := yaml.Marshal(m.current)
+	b := &bytes.Buffer{}
+	enc := yaml.NewEncoder(b)
+	// Use the same indentation as in the example configuration file.
+	enc.SetIndent(configFileIndent)
+
+	err = enc.Encode(m.current)
 	if err != nil {
 		return fmt.Errorf("encoding: %w", err)
 	}
 
-	err = maybe.WriteFile(m.fileName, b, aghos.DefaultPermFile)
+	err = maybe.WriteFile(m.fileName, b.Bytes(), aghos.DefaultPermFile)
 	if err != nil {
 		return fmt.Errorf("writing: %w", err)
 	}
@@ -278,6 +314,7 @@ func (m *Manager) updateCurrentDNS(c *dnssvc.Config) {
 	m.current.DNS.BootstrapPreferIPv6 = c.BootstrapPreferIPv6
 	m.current.DNS.RefuseAny = c.RefuseAny
 	m.current.DNS.UseDNS64 = c.UseDNS64
+	m.current.DNS.DNSSEC = c.DNSSECEnabled
 }
 
 // Web returns the current web service.  It is safe for concurrent use.

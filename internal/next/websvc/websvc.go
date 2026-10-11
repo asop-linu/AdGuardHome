@@ -44,6 +44,7 @@ type Service struct {
 	confMgr      ConfigManager
 	frontend     fs.FS
 	tls          *tls.Config
+	doh          *DoHConfig
 	pprof        *server
 	start        time.Time
 	overrideAddr netip.AddrPort
@@ -73,6 +74,7 @@ func New(c *Config) (svc *Service, err error) {
 		overrideAddr: c.OverrideAddress,
 		timeout:      c.Timeout,
 		forceHTTPS:   c.ForceHTTPS,
+		doh:          c.DoH,
 	}
 
 	mux := http.NewServeMux()
@@ -122,9 +124,15 @@ func (svc *Service) setupPprof(c *PprofConfig) {
 // must not be called simultaneously with Start.  If svc was initialized with
 // ":0" addresses, addrs will not return the actual bound ports until Start is
 // finished.
+//
+// Both returned slices are never nil, so that they are encoded as empty JSON
+// arrays instead of nulls.
 func (svc *Service) addrs() (addrs, secureAddrs []netip.AddrPort) {
+	addrs = []netip.AddrPort{}
+	secureAddrs = []netip.AddrPort{}
+
 	if svc.overrideAddr != (netip.AddrPort{}) {
-		return []netip.AddrPort{svc.overrideAddr}, nil
+		return []netip.AddrPort{svc.overrideAddr}, secureAddrs
 	}
 
 	for _, srv := range svc.servers {

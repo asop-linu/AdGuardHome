@@ -32,6 +32,7 @@ func TestService_HandleGetSettingsAll(t *testing.T) {
 		BootstrapPreferIPv6: true,
 		RefuseAny:           true,
 		UseDNS64:            true,
+		DNSSECEnabled:       true,
 	}
 
 	confMgr := newConfigManager()
@@ -47,6 +48,7 @@ func TestService_HandleGetSettingsAll(t *testing.T) {
 			BootstrapPreferIPv6: true,
 			RefuseAny:           true,
 			UseDNS64:            true,
+			DNSSECEnabled:       true,
 		})
 		require.NoError(t, err)
 
@@ -66,7 +68,7 @@ func TestService_HandleGetSettingsAll(t *testing.T) {
 
 	wantWeb := &websvc.HTTPAPIHTTPSettings{
 		Addresses:       []netip.AddrPort{addr},
-		SecureAddresses: nil,
+		SecureAddresses: []netip.AddrPort{},
 		Timeout:         aghhttp.JSONDuration(testTimeout),
 		ForceHTTPS:      false,
 	}
