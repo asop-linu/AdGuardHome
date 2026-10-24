@@ -7,7 +7,7 @@
 # This comment is used to simplify checking local copies of the Makefile.  Bump
 # this number every time a significant change is made to this Makefile.
 #
-# AdGuard-Project-Version: 12
+# AdGuard-Project-Version: 13
 
 # Don't name these macros "GO" etc., because GNU Make apparently makes them
 # exported environment variables with the literal value of "${GO:-go}" and so
@@ -24,7 +24,10 @@ DIST_DIR = dist
 GOAMD64 = v1
 GOPROXY = https://proxy.golang.org|direct
 GOTELEMETRY = off
-GOTOOLCHAIN = go1.27.2
+# Use "auto" instead of a pinned version, so that a locally installed Go
+# toolchain that is new enough is used as-is, and the required version is only
+# downloaded when the local one is older than the one in go.mod.
+GOTOOLCHAIN = auto
 GPG_KEY = devteam@adguard.com
 GPG_KEY_PASSPHRASE = not-a-real-password
 NPM = npm
