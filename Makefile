@@ -7,7 +7,7 @@
 # This comment is used to simplify checking local copies of the Makefile.  Bump
 # this number every time a significant change is made to this Makefile.
 #
-# AdGuard-Project-Version: 13
+# AdGuard-Project-Version: 14
 
 # Don't name these macros "GO" etc., because GNU Make apparently makes them
 # exported environment variables with the literal value of "${GO:-go}" and so
@@ -16,6 +16,7 @@
 #
 # See https://unix.stackexchange.com/q/646255/105635.
 GO.MACRO = $${GO:-go}
+RACE.MACRO = $${RACE:-1}
 VERBOSE.MACRO = $${VERBOSE:-0}
 
 # Some scripts in ./scripts/make use the `pipefail` shell option, which is not
@@ -35,6 +36,7 @@ GOTELEMETRY = off
 GOTOOLCHAIN = auto
 GPG_KEY = devteam@adguard.com
 GPG_KEY_PASSPHRASE = not-a-real-password
+JS_TEST_TIMEOUT = 5000
 NPM = npm
 NPM_FLAGS = --prefix $(CLIENT_DIR)
 NPM_INSTALL_FLAGS = $(NPM_FLAGS) --quiet --no-progress
@@ -116,7 +118,7 @@ js-build:     ; $(NPM) $(NPM_FLAGS) run build-prod
 js-deps:      ; $(NPM) $(NPM_INSTALL_FLAGS) ci
 js-typecheck: ; $(NPM) $(NPM_FLAGS) run typecheck
 js-lint:      ; $(NPM) $(NPM_FLAGS) run lint
-js-test:      ; $(NPM) $(NPM_FLAGS) run test
+js-test:      ; $(NPM) $(NPM_FLAGS) run test -- --test-timeout=$(JS_TEST_TIMEOUT)
 js-test-e2e:  ; $(NPM) $(NPM_FLAGS) run test:e2e
 
 # TODO(a.garipov): Think about making RACE='1' the default for all targets.
@@ -127,7 +129,7 @@ go-deps:      ; $(ENV)          "$(SHELL)"    ./scripts/make/go-deps.sh
 go-env:       ; $(ENV)          "$(GO.MACRO)" env
 go-fuzz:      ; $(ENV)          "$(SHELL)"    ./scripts/make/go-fuzz.sh
 go-lint:      ; $(ENV)          "$(SHELL)"    ./scripts/make/go-lint.sh
-go-test:      ; $(ENV) RACE='1' "$(SHELL)"    ./scripts/make/go-test.sh
+go-test:      ; $(ENV) RACE="$(RACE.MACRO)" "$(SHELL)" ./scripts/make/go-test.sh
 go-upd-tools: ; $(ENV)          "$(SHELL)"    ./scripts/make/go-upd-tools.sh
 
 .PHONY: go-check
