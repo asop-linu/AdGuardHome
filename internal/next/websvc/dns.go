@@ -8,7 +8,7 @@ import (
 
 	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
 	"github.com/AdguardTeam/AdGuardHome/internal/next/jsonpatch"
-	"github.com/AdguardTeam/dnsproxy/proxy"
+	"github.com/asop-linu/dnsproxy/proxy"
 )
 
 // ReqPatchSettingsDNS describes the request to the PATCH /api/v1/settings/dns

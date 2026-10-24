@@ -19,7 +19,7 @@ type TLSConfig struct {
 	// DNSCryptConfigFile is the path to the DNSCrypt config file.  It must be
 	// set if [TLSConfig.PortDNSCrypt] is not zero.
 	//
-	// See https://github.com/AdguardTeam/dnsproxy and
+	// See https://github.com/asop-linu/dnsproxy and
 	// https://github.com/AdguardTeam/dnscrypt.
 	DNSCryptConfigFile string `yaml:"dnscrypt_config_file"`
 

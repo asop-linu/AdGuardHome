@@ -3,7 +3,7 @@ package configmigrate
 import (
 	"context"
 
-	"github.com/AdguardTeam/dnsproxy/proxy"
+	"github.com/asop-linu/dnsproxy/proxy"
 )
 
 // migrateTo28 performs the following changes:
