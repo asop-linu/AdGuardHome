@@ -73,7 +73,7 @@ readonly committime
 # Set the linker flags accordingly: set the release channel and the current
 # version as well as goarm and gomips variable values, if the variables are set
 # and are not empty.
-version_pkg='github.com/AdguardTeam/AdGuardHome/internal/version'
+version_pkg='github.com/asop-linu/AdGuardHome/internal/version'
 readonly version_pkg
 
 ldflags="-s -w"

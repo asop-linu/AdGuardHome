@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/agh"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghnet"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghslog"
-	"github.com/AdguardTeam/AdGuardHome/internal/client"
+	"github.com/asop-linu/AdGuardHome/internal/agh"
+	"github.com/asop-linu/AdGuardHome/internal/aghhttp"
+	"github.com/asop-linu/AdGuardHome/internal/aghnet"
+	"github.com/asop-linu/AdGuardHome/internal/aghslog"
+	"github.com/asop-linu/AdGuardHome/internal/client"
 	"github.com/AdguardTeam/dnscrypt"
 	"github.com/AdguardTeam/golibs/container"
 	"github.com/AdguardTeam/golibs/errors"
@@ -836,7 +836,7 @@ func (s *Server) UpdatedProtectionStatus(
 	// relatively rare situation, do not lock s.serverLock for writing, as that
 	// can lead to freezes.
 	//
-	// See https://github.com/AdguardTeam/AdGuardHome/issues/5661.
+	// See https://github.com/asop-linu/AdGuardHome/issues/5661.
 	if s.protectionUpdateInProgress.CompareAndSwap(false, true) {
 		go s.enableProtectionAfterPause(ctx)
 	}

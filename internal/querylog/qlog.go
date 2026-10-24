@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghnet"
-	"github.com/AdguardTeam/AdGuardHome/internal/configmgr"
-	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
+	"github.com/asop-linu/AdGuardHome/internal/aghnet"
+	"github.com/asop-linu/AdGuardHome/internal/configmgr"
+	"github.com/asop-linu/AdGuardHome/internal/filtering"
 	"github.com/AdguardTeam/golibs/container"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"

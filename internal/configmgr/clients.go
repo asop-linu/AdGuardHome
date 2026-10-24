@@ -1,7 +1,7 @@
 package configmgr
 
 import (
-	"github.com/AdguardTeam/AdGuardHome/internal/client"
+	"github.com/asop-linu/AdGuardHome/internal/client"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/validate"
 	"github.com/c2h5oh/datasize"

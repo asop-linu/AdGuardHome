@@ -5,7 +5,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
+	"github.com/asop-linu/AdGuardHome/internal/filtering"
 	"github.com/AdguardTeam/golibs/netutil"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"

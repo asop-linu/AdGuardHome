@@ -11,8 +11,8 @@ import (
 	"strings"
 	"uuid"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghslog"
-	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
+	"github.com/asop-linu/AdGuardHome/internal/aghslog"
+	"github.com/asop-linu/AdGuardHome/internal/filtering"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/asop-linu/dnsproxy/proxy"

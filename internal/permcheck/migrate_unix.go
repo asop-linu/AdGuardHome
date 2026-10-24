@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghos"
+	"github.com/asop-linu/AdGuardHome/internal/aghos"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 )

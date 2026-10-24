@@ -168,7 +168,7 @@ func (s *DefaultStorage) resolveCNAMEChain(
 //
 // For example, an "*.example.com → sub.example.com" rewrite matching in a loop.
 //
-// See https://github.com/AdguardTeam/AdGuardHome/issues/4016.
+// See https://github.com/asop-linu/AdGuardHome/issues/4016.
 func isSelfMatchingWildcard(host, rwAns, ruleText string) (ok bool) {
 	return host == rwAns && isWildcard(ruleText)
 }

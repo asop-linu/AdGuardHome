@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"net/netip"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghalg"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
-	"github.com/AdguardTeam/AdGuardHome/internal/client"
-	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
-	"github.com/AdguardTeam/AdGuardHome/internal/filtering/safesearch"
-	"github.com/AdguardTeam/AdGuardHome/internal/schedule"
-	"github.com/AdguardTeam/AdGuardHome/internal/whois"
+	"github.com/asop-linu/AdGuardHome/internal/aghalg"
+	"github.com/asop-linu/AdGuardHome/internal/aghhttp"
+	"github.com/asop-linu/AdGuardHome/internal/client"
+	"github.com/asop-linu/AdGuardHome/internal/filtering"
+	"github.com/asop-linu/AdGuardHome/internal/filtering/safesearch"
+	"github.com/asop-linu/AdGuardHome/internal/schedule"
+	"github.com/asop-linu/AdGuardHome/internal/whois"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 )
 
@@ -586,7 +586,7 @@ func (clients *clientsContainer) findRuntime(
 	// runtime client associated with the IP address was stored previously, but
 	// then the server was reloaded.
 	//
-	// See https://github.com/AdguardTeam/AdGuardHome/issues/2428.
+	// See https://github.com/asop-linu/AdGuardHome/issues/2428.
 	disallowed, rule := clients.clientChecker.IsBlockedClient(ip, string(params.ClientID))
 
 	var disallowedRule *string

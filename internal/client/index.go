@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghalg"
+	"github.com/asop-linu/AdGuardHome/internal/aghalg"
 )
 
 // macKey contains MAC as byte array of 6, 8, or 20 bytes.

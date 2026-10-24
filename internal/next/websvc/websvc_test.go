@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/next/agh"
-	"github.com/AdguardTeam/AdGuardHome/internal/next/dnssvc"
-	"github.com/AdguardTeam/AdGuardHome/internal/next/websvc"
+	"github.com/asop-linu/AdGuardHome/internal/next/agh"
+	"github.com/asop-linu/AdGuardHome/internal/next/dnssvc"
+	"github.com/asop-linu/AdGuardHome/internal/next/websvc"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil/httputil"
 	"github.com/AdguardTeam/golibs/netutil/urlutil"

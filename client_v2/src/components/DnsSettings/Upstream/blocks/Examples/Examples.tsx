@@ -107,7 +107,7 @@ export const Examples = () => {
             value: '[/example.local/]94.140.14.140',
             a: (text: string) => (
                 <a
-                    href="https://github.com/AdguardTeam/AdGuardHome/wiki/Configuration#upstreams-for-domains"
+                    href="https://github.com/asop-linu/AdGuardHome/wiki/Configuration#upstreams-for-domains"
                     target="_blank"
                     rel="noopener noreferrer"
                 >
@@ -119,7 +119,7 @@ export const Examples = () => {
             value: '[/example.local/]94.140.14.140 2a10:50c0::1:ff',
             a: (text: string) => (
                 <a
-                    href="https://github.com/AdguardTeam/AdGuardHome/wiki/Configuration#upstreams-for-domains"
+                    href="https://github.com/asop-linu/AdGuardHome/wiki/Configuration#upstreams-for-domains"
                     target="_blank"
                     rel="noopener noreferrer"
                 >

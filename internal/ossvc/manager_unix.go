@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghos"
+	"github.com/asop-linu/AdGuardHome/internal/aghos"
 	"github.com/AdguardTeam/golibs/errors"
 )
 

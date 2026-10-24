@@ -8,11 +8,11 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/agh"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghnet"
-	"github.com/AdguardTeam/AdGuardHome/internal/configmgr"
-	"github.com/AdguardTeam/AdGuardHome/internal/dhcpsvc"
+	"github.com/asop-linu/AdGuardHome/internal/agh"
+	"github.com/asop-linu/AdGuardHome/internal/aghhttp"
+	"github.com/asop-linu/AdGuardHome/internal/aghnet"
+	"github.com/asop-linu/AdGuardHome/internal/configmgr"
+	"github.com/asop-linu/AdGuardHome/internal/dhcpsvc"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/osutil/executil"
 )

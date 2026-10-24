@@ -26,7 +26,7 @@ func newARPDB(logger *slog.Logger, cmdCons executil.CommandConstructor) (arp *cm
 		// default ARP attempts to resolve the hostnames via DNS.  See man 8
 		// arp.
 		//
-		// See also https://github.com/AdguardTeam/AdGuardHome/issues/3157.
+		// See also https://github.com/asop-linu/AdGuardHome/issues/3157.
 		args: []string{"-a", "-n"},
 	}
 }

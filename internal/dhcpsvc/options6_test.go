@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/dhcpsvc"
+	"github.com/asop-linu/AdGuardHome/internal/dhcpsvc"
 	"github.com/gopacket/gopacket/layers"
 )
 

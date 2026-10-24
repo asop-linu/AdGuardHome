@@ -59,7 +59,7 @@ describe('sortIp', () => {
 
             expect(arr.sort(sortIp)).toStrictEqual(sortedArr);
 
-            // Example from issue https://github.com/AdguardTeam/AdGuardHome/issues/1778#issuecomment-640937599
+            // Example from issue https://github.com/asop-linu/AdGuardHome/issues/1778#issuecomment-640937599
             const arr2 = [
                 '192.168.2.11',
                 '192.168.3.1',

@@ -3,7 +3,7 @@ package websvc
 import (
 	"net/http"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
+	"github.com/asop-linu/AdGuardHome/internal/aghhttp"
 )
 
 // All Settings Handlers

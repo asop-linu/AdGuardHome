@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghos"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghrenameio"
-	"github.com/AdguardTeam/AdGuardHome/internal/filtering/rulelist"
+	"github.com/asop-linu/AdGuardHome/internal/aghos"
+	"github.com/asop-linu/AdGuardHome/internal/aghrenameio"
+	"github.com/asop-linu/AdGuardHome/internal/filtering/rulelist"
 	"github.com/AdguardTeam/golibs/container"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/ioutil"

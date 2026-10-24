@@ -3,7 +3,7 @@ package aghuser_test
 import (
 	"testing"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghuser"
+	"github.com/asop-linu/AdGuardHome/internal/aghuser"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/testutil"
 	"github.com/stretchr/testify/assert"

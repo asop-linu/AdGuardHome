@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/configmgr"
-	"github.com/AdguardTeam/AdGuardHome/internal/dhcpsvc"
+	"github.com/asop-linu/AdGuardHome/internal/configmgr"
+	"github.com/asop-linu/AdGuardHome/internal/dhcpsvc"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/timeutil"
 )

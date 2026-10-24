@@ -6,7 +6,7 @@
       'label': 'Prerequisites'
       'options':
         - 'label': >
-            I have checked the [Wiki](https://github.com/AdguardTeam/AdGuardHome/wiki) and [Discussions](https://github.com/AdguardTeam/AdGuardHome/discussions/categories/q-a) and found no answer
+            I have checked the [Wiki](https://github.com/asop-linu/AdGuardHome/wiki) and [Discussions](https://github.com/asop-linu/AdGuardHome/discussions/categories/q-a) and found no answer
 
           'required': true
         - 'label': >
@@ -14,11 +14,11 @@
 
           'required': true
         - 'label': >
-            I want to report a bug and not [ask a question or ask for help](https://github.com/AdguardTeam/AdGuardHome/discussions/categories/q-a)
+            I want to report a bug and not [ask a question or ask for help](https://github.com/asop-linu/AdGuardHome/discussions/categories/q-a)
 
           'required': true
         - 'label': >
-            I have set up AdGuard Home correctly and [configured clients to use it](https://github.com/AdguardTeam/AdGuardHome/wiki/Clients). (Use the [Discussions](https://github.com/AdguardTeam/AdGuardHome/discussions/categories/q-a) for help with installing and configuring clients.)
+            I have set up AdGuard Home correctly and [configured clients to use it](https://github.com/asop-linu/AdGuardHome/wiki/Clients). (Use the [Discussions](https://github.com/asop-linu/AdGuardHome/discussions/categories/q-a) for help with installing and configuring clients.)
 
           'required': true
     'id': 'prerequisites'

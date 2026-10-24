@@ -14,9 +14,9 @@
       Please use GitHub Discussions for questions
 
     'name': 'Q&A Discussions'
-    'url': 'https://github.com/AdguardTeam/AdGuardHome/discussions'
+    'url': 'https://github.com/asop-linu/AdGuardHome/discussions'
   - 'about': >
       Please check our Wiki for configuration file description, frequently asked questions, and other documentation
 
     'name': 'Wiki'
-    'url': 'https://github.com/AdguardTeam/AdGuardHome/wiki'
+    'url': 'https://github.com/asop-linu/AdGuardHome/wiki'

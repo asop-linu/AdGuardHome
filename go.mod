@@ -1,4 +1,4 @@
-module github.com/AdguardTeam/AdGuardHome
+module github.com/asop-linu/AdGuardHome
 
 go 1.27.3
 

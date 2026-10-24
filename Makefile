@@ -43,7 +43,7 @@ NPM_INSTALL_FLAGS = $(NPM_FLAGS) --quiet --no-progress
 RACE = 0
 REVISION = $${REVISION:-$$(git rev-parse --short HEAD)}
 SIGN = 1
-VERSION = v0.0.0
+VERSION = v1.0.0
 
 NEXTAPI = 0
 

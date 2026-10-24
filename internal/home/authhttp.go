@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghuser"
+	"github.com/asop-linu/AdGuardHome/internal/aghhttp"
+	"github.com/asop-linu/AdGuardHome/internal/aghuser"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/httphdr"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
@@ -120,7 +120,7 @@ func (web *webAPI) handleLogin(w http.ResponseWriter, r *http.Request) {
 	// The real IP address of the client [realIP] cannot be used here without
 	// taking trusted proxies into account due to security issues:
 	//
-	// See https://github.com/AdguardTeam/AdGuardHome/issues/2799.
+	// See https://github.com/asop-linu/AdGuardHome/issues/2799.
 	if remoteIPStr, err = netutil.SplitHost(r.RemoteAddr); err != nil {
 		web.writeErrorWithIP(
 			ctx,
@@ -553,7 +553,7 @@ func (mw *authMiddlewareDefault) userFromRequestBasicAuth(
 	// The real IP address of the client [realIP] cannot be used here without
 	// taking trusted proxies into account due to security issues:
 	//
-	// See https://github.com/AdguardTeam/AdGuardHome/issues/2799.
+	// See https://github.com/asop-linu/AdGuardHome/issues/2799.
 	if remoteIP, err = netutil.SplitHost(r.RemoteAddr); err != nil {
 		return nil, fmt.Errorf("getting remote address: %w", err)
 	}

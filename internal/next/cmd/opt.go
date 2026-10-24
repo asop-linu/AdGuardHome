@@ -13,9 +13,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/configmigrate"
-	"github.com/AdguardTeam/AdGuardHome/internal/next/configmgr"
-	"github.com/AdguardTeam/AdGuardHome/internal/version"
+	"github.com/asop-linu/AdGuardHome/internal/configmigrate"
+	"github.com/asop-linu/AdGuardHome/internal/next/configmgr"
+	"github.com/asop-linu/AdGuardHome/internal/version"
 	"github.com/AdguardTeam/golibs/osutil"
 )
 

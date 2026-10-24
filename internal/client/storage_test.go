@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/arpdb"
-	"github.com/AdguardTeam/AdGuardHome/internal/client"
-	"github.com/AdguardTeam/AdGuardHome/internal/dhcpd"
-	"github.com/AdguardTeam/AdGuardHome/internal/dhcpsvc"
-	"github.com/AdguardTeam/AdGuardHome/internal/dnsforward"
-	"github.com/AdguardTeam/AdGuardHome/internal/whois"
+	"github.com/asop-linu/AdGuardHome/internal/arpdb"
+	"github.com/asop-linu/AdGuardHome/internal/client"
+	"github.com/asop-linu/AdGuardHome/internal/dhcpd"
+	"github.com/asop-linu/AdGuardHome/internal/dhcpsvc"
+	"github.com/asop-linu/AdGuardHome/internal/dnsforward"
+	"github.com/asop-linu/AdGuardHome/internal/whois"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/hostsfile"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
@@ -1359,7 +1359,7 @@ func BenchmarkFindParams_Set(b *testing.B) {
 	//
 	//	goos: linux
 	//	goarch: amd64
-	//	pkg: github.com/AdguardTeam/AdGuardHome/internal/client
+	//	pkg: github.com/asop-linu/AdGuardHome/internal/client
 	//	cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
 	//	BenchmarkFindParams_Set/client_id-8         	49463488	        24.27 ns/op	       0 B/op	       0 allocs/op
 	//	BenchmarkFindParams_Set/ip_address-8        	18740977	        62.22 ns/op	       0 B/op	       0 allocs/op
@@ -1463,7 +1463,7 @@ func BenchmarkStorage_Find(b *testing.B) {
 	//
 	//	goos: linux
 	//	goarch: amd64
-	//	pkg: github.com/AdguardTeam/AdGuardHome/internal/client
+	//	pkg: github.com/asop-linu/AdGuardHome/internal/client
 	//	cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
 	//	BenchmarkStorage_Find/client_id-8         	 7070107	       154.4 ns/op	     240 B/op	       2 allocs/op
 	//	BenchmarkStorage_Find/ip_address-8        	 6831823	       168.6 ns/op	     248 B/op	       2 allocs/op

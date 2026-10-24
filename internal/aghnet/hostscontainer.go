@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"sync/atomic"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghos"
+	"github.com/asop-linu/AdGuardHome/internal/aghos"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/hostsfile"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"

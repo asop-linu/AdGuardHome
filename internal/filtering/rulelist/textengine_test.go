@@ -3,7 +3,7 @@ package rulelist_test
 import (
 	"testing"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/filtering/rulelist"
+	"github.com/asop-linu/AdGuardHome/internal/filtering/rulelist"
 	"github.com/AdguardTeam/golibs/testutil"
 	"github.com/AdguardTeam/urlfilter"
 	"github.com/miekg/dns"

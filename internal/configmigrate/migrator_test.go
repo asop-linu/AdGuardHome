@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/configmigrate"
+	"github.com/asop-linu/AdGuardHome/internal/configmigrate"
 	"github.com/AdguardTeam/golibs/testutil"
 	"github.com/stretchr/testify/require"
 	yaml "go.yaml.in/yaml/v4"

@@ -20,24 +20,24 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/agh"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghnet"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghos"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghslog"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghtls"
-	"github.com/AdguardTeam/AdGuardHome/internal/arpdb"
-	"github.com/AdguardTeam/AdGuardHome/internal/configmgr"
-	"github.com/AdguardTeam/AdGuardHome/internal/dhcpd"
-	"github.com/AdguardTeam/AdGuardHome/internal/dnsforward"
-	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
-	"github.com/AdguardTeam/AdGuardHome/internal/filtering/hashprefix"
-	"github.com/AdguardTeam/AdGuardHome/internal/filtering/safesearch"
-	"github.com/AdguardTeam/AdGuardHome/internal/permcheck"
-	"github.com/AdguardTeam/AdGuardHome/internal/querylog"
-	"github.com/AdguardTeam/AdGuardHome/internal/stats"
-	"github.com/AdguardTeam/AdGuardHome/internal/updater"
-	"github.com/AdguardTeam/AdGuardHome/internal/version"
+	"github.com/asop-linu/AdGuardHome/internal/agh"
+	"github.com/asop-linu/AdGuardHome/internal/aghhttp"
+	"github.com/asop-linu/AdGuardHome/internal/aghnet"
+	"github.com/asop-linu/AdGuardHome/internal/aghos"
+	"github.com/asop-linu/AdGuardHome/internal/aghslog"
+	"github.com/asop-linu/AdGuardHome/internal/aghtls"
+	"github.com/asop-linu/AdGuardHome/internal/arpdb"
+	"github.com/asop-linu/AdGuardHome/internal/configmgr"
+	"github.com/asop-linu/AdGuardHome/internal/dhcpd"
+	"github.com/asop-linu/AdGuardHome/internal/dnsforward"
+	"github.com/asop-linu/AdGuardHome/internal/filtering"
+	"github.com/asop-linu/AdGuardHome/internal/filtering/hashprefix"
+	"github.com/asop-linu/AdGuardHome/internal/filtering/safesearch"
+	"github.com/asop-linu/AdGuardHome/internal/permcheck"
+	"github.com/asop-linu/AdGuardHome/internal/querylog"
+	"github.com/asop-linu/AdGuardHome/internal/stats"
+	"github.com/asop-linu/AdGuardHome/internal/updater"
+	"github.com/asop-linu/AdGuardHome/internal/version"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/hostsfile"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
@@ -1185,7 +1185,7 @@ Please note that this is crucial for a server to be able to use privileged ports
 You have two options:
 1. Run AdGuard Home with root privileges.
 2. On Linux you can grant the CAP_NET_BIND_SERVICE capability:
-https://github.com/AdguardTeam/AdGuardHome/wiki/Getting-Started#running-without-superuser`
+https://github.com/asop-linu/AdGuardHome/wiki/Getting-Started#running-without-superuser`
 
 // checkNetworkPermissions checks if the current user permissions are enough to
 // use the required networking functionality.  l must not be nil.

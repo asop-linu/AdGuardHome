@@ -3,7 +3,7 @@ package ossvc_test
 import (
 	"testing"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/ossvc"
+	"github.com/asop-linu/AdGuardHome/internal/ossvc"
 	"github.com/AdguardTeam/golibs/timeutil"
 	"github.com/kardianos/service"
 	"github.com/stretchr/testify/assert"

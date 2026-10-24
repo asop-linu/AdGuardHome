@@ -52,7 +52,7 @@ const (
 	// TODO(a.garipov): Remove [Rewritten] and [RewrittenAutoHosts] by merging
 	// their functionality into RewrittenRule.
 	//
-	// See https://github.com/AdguardTeam/AdGuardHome/issues/2499.
+	// See https://github.com/asop-linu/AdGuardHome/issues/2499.
 	RewrittenRule
 )
 

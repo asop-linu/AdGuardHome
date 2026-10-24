@@ -235,9 +235,9 @@ readonly version_download_url version_json
 # If the channel is edge, point users to the "Platforms" page on the Wiki,
 # because the direct links to the edge packages are listed there.
 if [ "$channel" = 'edge' ]; then
-	announcement_url='https://github.com/AdguardTeam/AdGuardHome/wiki/Platforms'
+	announcement_url='https://github.com/asop-linu/AdGuardHome/wiki/Platforms'
 else
-	announcement_url="https://github.com/AdguardTeam/AdGuardHome/releases/tag/${version}"
+	announcement_url="https://github.com/asop-linu/AdGuardHome/releases/tag/${version}"
 fi
 readonly announcement_url
 

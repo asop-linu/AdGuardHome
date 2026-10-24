@@ -12,7 +12,7 @@ import (
 	"strings"
 	"uuid"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/client"
+	"github.com/asop-linu/AdGuardHome/internal/client"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/httphdr"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
@@ -40,7 +40,7 @@ type dnsSettings struct {
 	//
 	// TODO(a.garipov): Allow users to set this.
 	//
-	// See https://github.com/AdguardTeam/AdGuardHome/issues/3607.
+	// See https://github.com/asop-linu/AdGuardHome/issues/3607.
 	ServerAddresses []net.IP `plist:",omitempty"`
 }
 

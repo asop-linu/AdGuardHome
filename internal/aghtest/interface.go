@@ -8,14 +8,14 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/agh"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghalg"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghos"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghtls"
-	nextagh "github.com/AdguardTeam/AdGuardHome/internal/next/agh"
-	"github.com/AdguardTeam/AdGuardHome/internal/rdns"
-	"github.com/AdguardTeam/AdGuardHome/internal/whois"
+	"github.com/asop-linu/AdGuardHome/internal/agh"
+	"github.com/asop-linu/AdGuardHome/internal/aghalg"
+	"github.com/asop-linu/AdGuardHome/internal/aghhttp"
+	"github.com/asop-linu/AdGuardHome/internal/aghos"
+	"github.com/asop-linu/AdGuardHome/internal/aghtls"
+	nextagh "github.com/asop-linu/AdGuardHome/internal/next/agh"
+	"github.com/asop-linu/AdGuardHome/internal/rdns"
+	"github.com/asop-linu/AdGuardHome/internal/whois"
 	"github.com/AdguardTeam/golibs/testutil"
 )
 

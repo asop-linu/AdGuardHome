@@ -10,7 +10,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghos"
+	"github.com/asop-linu/AdGuardHome/internal/aghos"
 	"github.com/AdguardTeam/golibs/netutil"
 	"github.com/AdguardTeam/golibs/osutil/executil"
 )

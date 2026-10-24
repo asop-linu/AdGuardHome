@@ -7,7 +7,7 @@
   'version': '0.107'
   'contact':
     'name': 'AdGuard Home'
-    'url': 'https://github.com/AdguardTeam/AdGuardHome'
+    'url': 'https://github.com/asop-linu/AdGuardHome'
 
 'servers':
 - 'url': '/control'
@@ -1911,7 +1911,7 @@
         'announcement_url':
           'type': 'string'
           'example': >
-            https://github.com/AdguardTeam/AdGuardHome/releases/tag/v0.9
+            https://github.com/asop-linu/AdGuardHome/releases/tag/v0.9
         'can_autoupdate':
           'type': 'boolean'
     'Stats':

@@ -6,7 +6,7 @@
       'label': 'Prerequisites'
       'options':
         - 'label': >
-            I have checked the [Wiki](https://github.com/AdguardTeam/AdGuardHome/wiki) and [Discussions](https://github.com/AdguardTeam/AdGuardHome/discussions) and found no answer
+            I have checked the [Wiki](https://github.com/asop-linu/AdGuardHome/wiki) and [Discussions](https://github.com/asop-linu/AdGuardHome/discussions) and found no answer
 
           'required': true
         - 'label': >

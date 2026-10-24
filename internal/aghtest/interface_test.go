@@ -1,8 +1,8 @@
 package aghtest_test
 
 import (
-	"github.com/AdguardTeam/AdGuardHome/internal/aghtest"
-	"github.com/AdguardTeam/AdGuardHome/internal/client"
+	"github.com/asop-linu/AdGuardHome/internal/aghtest"
+	"github.com/asop-linu/AdGuardHome/internal/client"
 )
 
 // type check

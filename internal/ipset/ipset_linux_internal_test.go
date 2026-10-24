@@ -180,7 +180,7 @@ func BenchmarkManager_LookupHost(b *testing.B) {
 	//
 	//	goos: linux
 	//	goarch: amd64
-	//	pkg: github.com/AdguardTeam/AdGuardHome/internal/ipset
+	//	pkg: github.com/asop-linu/AdGuardHome/internal/ipset
 	//	cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
 	//	BenchmarkManager_LookupHost/long-8         	 6562424	       174.8 ns/op	       0 B/op	       0 allocs/op
 	//	BenchmarkManager_LookupHost/short-8        	100000000	        10.72 ns/op	       0 B/op	       0 allocs/op

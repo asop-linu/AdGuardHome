@@ -62,7 +62,7 @@ Playwright, TypeScript) is installed locally via `npm install`.
 All commands in this guide are run from the `client_v2/` directory.
 
 ```sh
-git clone https://github.com/AdguardTeam/AdGuardHome.git
+git clone https://github.com/asop-linu/AdGuardHome.git
 cd AdGuardHome/client_v2
 npm install
 ```

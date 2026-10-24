@@ -3,7 +3,7 @@ package filtering
 import (
 	"testing"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghalg"
+	"github.com/asop-linu/AdGuardHome/internal/aghalg"
 	"github.com/AdguardTeam/urlfilter/rules"
 	"github.com/stretchr/testify/assert"
 )

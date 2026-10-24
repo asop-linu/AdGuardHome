@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghalg"
+	"github.com/asop-linu/AdGuardHome/internal/aghalg"
 	"github.com/AdguardTeam/golibs/service"
 )
 

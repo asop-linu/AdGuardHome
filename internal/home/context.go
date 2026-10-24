@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghuser"
+	"github.com/asop-linu/AdGuardHome/internal/aghuser"
 	"github.com/AdguardTeam/golibs/errors"
 )
 

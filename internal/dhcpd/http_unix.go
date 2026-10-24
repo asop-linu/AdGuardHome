@@ -15,11 +15,11 @@ import (
 	"slices"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghalg"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghnet"
-	"github.com/AdguardTeam/AdGuardHome/internal/configmgr"
-	"github.com/AdguardTeam/AdGuardHome/internal/dhcpsvc"
+	"github.com/asop-linu/AdGuardHome/internal/aghalg"
+	"github.com/asop-linu/AdGuardHome/internal/aghhttp"
+	"github.com/asop-linu/AdGuardHome/internal/aghnet"
+	"github.com/asop-linu/AdGuardHome/internal/configmgr"
+	"github.com/asop-linu/AdGuardHome/internal/dhcpsvc"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/log"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
@@ -132,7 +132,7 @@ func leasesToDynamic(leases []*dhcpsvc.Lease) (dynamic []*leaseDynamic) {
 			// The front-end is waiting for RFC 3999 format of the time
 			// value.
 			//
-			// See https://github.com/AdguardTeam/AdGuardHome/issues/2692.
+			// See https://github.com/asop-linu/AdGuardHome/issues/2692.
 			Expiry: l.Expiry.Format(time.RFC3339),
 		}
 	}
@@ -200,7 +200,7 @@ func (s *server) enableDHCP(ctx context.Context, ifaceName string) (code int, er
 			// machine doesn't have a static IP, so we can assume that it has
 			// and go on.  If the machine doesn't, we'll get an error later.
 			//
-			// See https://github.com/AdguardTeam/AdGuardHome/issues/2667.
+			// See https://github.com/asop-linu/AdGuardHome/issues/2667.
 			//
 			// TODO(a.garipov): I was thinking about moving this into
 			// IfaceHasStaticIP, but then we wouldn't be able to log it.  Think

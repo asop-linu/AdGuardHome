@@ -22,8 +22,8 @@ const (
 // that are designed to expect large files and requests.  Remove once the new,
 // better APIs are up.
 //
-// See https://github.com/AdguardTeam/AdGuardHome/issues/2666 and
-// https://github.com/AdguardTeam/AdGuardHome/issues/2675.
+// See https://github.com/asop-linu/AdGuardHome/issues/2666 and
+// https://github.com/asop-linu/AdGuardHome/issues/2675.
 func expectsLargerRequests(r *http.Request) (ok bool) {
 	if r.Method != http.MethodPost {
 		return false

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/next/dnssvc"
+	"github.com/asop-linu/AdGuardHome/internal/next/dnssvc"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/testutil"
 	"github.com/asop-linu/dnsproxy/proxy"

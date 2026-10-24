@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/ipset"
+	"github.com/asop-linu/AdGuardHome/internal/ipset"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/miekg/dns"

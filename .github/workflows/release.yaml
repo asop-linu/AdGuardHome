@@ -290,7 +290,7 @@
       # version.json by scripts/make/pack-release.sh.
       'tag_name': ${{ needs.Build.outputs.app_version }}
       'team': 'go'
-      'target_repo': 'AdguardTeam/AdGuardHome'
+      'target_repo': 'asop-linu/AdGuardHome'
 'name': 'Build and publish releases'
 'on':
   # Only the daily schedule runs automatically, on the default branch.  Builds

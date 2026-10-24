@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"slices"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghnet"
+	"github.com/asop-linu/AdGuardHome/internal/aghnet"
 	"github.com/AdguardTeam/golibs/netutil"
 	"github.com/AdguardTeam/golibs/stringutil"
 	"github.com/asop-linu/dnsproxy/proxy"

@@ -4,8 +4,8 @@ import (
 	"slices"
 	"time"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/aghalg"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghtls"
+	"github.com/asop-linu/AdGuardHome/internal/aghalg"
+	"github.com/asop-linu/AdGuardHome/internal/aghtls"
 )
 
 // tlsConfigStatus contains the status of a certificate chain and key pair.

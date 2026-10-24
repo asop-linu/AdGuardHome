@@ -2,7 +2,7 @@ Before submitting a PR please make sure that:
 
 1.  You have discussed your solution in an issue and have got an
     approval from a maintainer.  See our
-    [contribution guide](https://github.com/AdguardTeam/AdGuardHome/blob/master/CONTRIBUTING.md).
+    [contribution guide](https://github.com/asop-linu/AdGuardHome/blob/master/CONTRIBUTING.md).
 
 2.  This isn't a localization fix; please send those to our
     [CrowdIn](https://crowdin.com/project/adguard-applications/en#/adguard-home)

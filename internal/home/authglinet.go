@@ -161,7 +161,7 @@ func (mw *authMiddlewareGLiNet) tokenDate(ctx context.Context, tokenFile string)
 	// Create a 4-byte long buffer to store Unix time as a uint32, since GL.iNet
 	// routers use it as part of an authentication mechanism.
 	//
-	// See https://github.com/AdguardTeam/AdGuardHome/issues/1853.
+	// See https://github.com/asop-linu/AdGuardHome/issues/1853.
 	data := make([]byte, 4)
 	_, err = io.ReadFull(f, data)
 	if err != nil {
