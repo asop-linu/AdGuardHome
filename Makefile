@@ -18,6 +18,11 @@
 GO.MACRO = $${GO:-go}
 VERBOSE.MACRO = $${VERBOSE:-0}
 
+# Some scripts in ./scripts/make use the `pipefail` shell option, which is not
+# supported by POSIX-compliant shells, such as dash on Debian and Ubuntu.
+# Therefore, always run them with bash when it is available.
+SHELL = /bin/bash
+
 CHANNEL = development
 CLIENT_DIR = client_v2
 DIST_DIR = dist
